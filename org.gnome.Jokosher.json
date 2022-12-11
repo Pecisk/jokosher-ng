@@ -1,0 +1,85 @@
+{
+    "app-id" : "org.gnome.Jokosher",
+    "runtime" : "org.gnome.Platform",
+    "runtime-version" : "43",
+    "sdk" : "org.gnome.Sdk",
+    "command" : "jokosher",
+    "finish-args" : [
+        "--share=network",
+        "--share=ipc",
+        "--socket=fallback-x11",
+        "--device=dri",
+        "--socket=wayland"
+    ],
+    "cleanup" : [
+        "/include",
+        "/lib/pkgconfig",
+        "/man",
+        "/share/doc",
+        "/share/gtk-doc",
+        "/share/man",
+        "/share/pkgconfig",
+        "*.la",
+        "*.a"
+    ],
+    "modules" : [
+    	        {
+            "name": "gstreamer",
+            "buildsystem": "meson",
+            "builddir": true,
+            "config-opts": [
+                "--libdir=lib",
+                "--wrap-mode=nodownload",
+                "-Dbad=enabled",
+                "-Dbase=enabled",
+                "-Ddevtools=enabled",
+                "-Ddoc=disabled",
+                "-Dges=enabled",
+                "-Dgood=enabled",
+                "-Dgpl=enabled",
+                "-Dgst-devtools:doc=disabled",
+                "-Dgst-editing-services:doc=disabled",
+                "-Dgst-editing-services:pygi-overrides-dir=/app/lib/python3.10/site-packages/gi/overrides/",
+                "-Dgst-libav:doc=disabled",
+                "-Dgst-plugins-bad:aom=disabled",
+                "-Dgst-plugins-bad:doc=disabled",
+                "-Dgst-plugins-bad:frei0r=disabled",
+                "-Dgst-plugins-bad:soundtouch=disabled",
+                "-Dgst-plugins-bad:voaacenc=disabled",
+                "-Dgst-plugins-bad:x265=disabled",
+                "-Dgst-plugins-base:doc=disabled",
+                "-Dgst-plugins-base:orc=disabled",
+                "-Dgst-plugins-good:doc=disabled",
+                "-Dgst-plugins-good:dv=disabled",
+                "-Dgst-plugins-ugly:doc=disabled",
+                "-Dgst-plugins-ugly:x264=disabled",
+                "-Dgst-python:pygi-overrides-dir=/app/lib/python3.10/site-packages/gi/overrides/",
+                "-Dgstreamer-vaapi:doc=disabled",
+                "-Dintrospection=enabled",
+                "-Dlibav=disabled",
+                "-Dpython=enabled",
+                "-Dugly=enabled",
+                "-Dvaapi=enabled"
+            ],
+            "sources": [
+                {
+                    "type": "git",
+                    "url": "https://gitlab.freedesktop.org/gstreamer/gstreamer.git",
+                    "branch": "main",
+                    "disable-submodules": true
+                }
+            ]
+        },
+        {
+            "name" : "jokosher",
+            "builddir" : true,
+            "buildsystem" : "meson",
+            "sources" : [
+                {
+                    "type" : "git",
+                    "url" : "file:///home/peteriskrisjanis/Projekti"
+                }
+            ]
+        }
+    ]
+}

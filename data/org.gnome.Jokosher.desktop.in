@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=jokosher
+Exec=jokosher
+Icon=org.gnome.Jokosher
+Terminal=false
+Type=Application
+Categories=GTK;
+StartupNotify=true

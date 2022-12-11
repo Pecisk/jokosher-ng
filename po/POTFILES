@@ -1,0 +1,6 @@
+data/org.gnome.Jokosher.desktop.in
+data/org.gnome.Jokosher.appdata.xml.in
+data/org.gnome.Jokosher.gschema.xml
+src/main.py
+src/window.py
+src/window.ui
