@@ -31,6 +31,11 @@ class JokosherWindow(Adw.ApplicationWindow):
 
     general_box = Gtk.Template.Child()
 
+    # add general button control
+    play_button = Gtk.Template.Child()
+    stop_button = Gtk.Template.Child()
+    record_button = Gtk.Template.Child()
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # set up project
@@ -44,10 +49,28 @@ class JokosherWindow(Adw.ApplicationWindow):
         action.connect("activate", self.do_add_audio)
         self.add_action(action)
 
+        # add play/stop/record hooks
+        self.play_button.connect("toggled", self.play_button_cb)
+        self.stop_button.connect("toggled", self.stop_button_cb)
+        self.record_button.connect("toggled", self.record_button_cb)
+
+    def play_button_cb(self, button):
+        print(button.get_active())
+
+    def stop_button_cb(self, button):
+        print(button.get_active())
+
+    def record_button_cb(self, button):
+        print(button.get_active())
+
     def do_add_instrument(self, widget, _):
         self.project.add_instrument("None", "None")
 
     def on_open_project(self):
+        # FIXME set sensitivity where it needs to be
+        self.play_button.set_sensitive(True);
+        self.stop_button.set_sensitive(True);
+        self.record_button.set_sensitive(True);
         self.project = Project.get_current_project()
         self.workspace = Workspace()
         self.general_box.append(self.workspace)
@@ -106,3 +129,4 @@ class JokosherWindow(Adw.ApplicationWindow):
 
     # def on_add_audio_cb(source_object, res, user_data):
     #     self.add_audio_dialog.open_finish(res)
+

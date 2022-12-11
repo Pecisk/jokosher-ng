@@ -95,6 +95,7 @@ class Settings:
         """
 
         self.XDG_RESOURCE_NAME = "jokosher"
+        # Glib.get_user_data_dir / get_user_config_dir
         #JOKOSHER_CONFIG_HOME = xdg.BaseDirectory.save_config_path(XDG_RESOURCE_NAME)
         #JOKOSHER_DATA_HOME =   xdg.BaseDirectory.save_data_path(XDG_RESOURCE_NAME)
         self.JOKOSHER_CONFIG_HOME = '/home/peteriskrisjanis/' + self.XDG_RESOURCE_NAME

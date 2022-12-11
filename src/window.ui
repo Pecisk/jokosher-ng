@@ -28,18 +28,21 @@
               </object>
             </child>
             <child>
-              <object class="GtkToggleButton">
+              <object class="GtkToggleButton" id="play_button">
                 <property name="icon-name">media-playback-start</property>
+                <property name="sensitive">false</property>
               </object>
             </child>
             <child>
-              <object class="GtkToggleButton">
+              <object class="GtkToggleButton" id="stop_button">
                 <property name="icon-name">media-playback-stop</property>
+                <property name="sensitive">false</property>
               </object>
             </child>
             <child>
-              <object class="GtkToggleButton">
+              <object class="GtkToggleButton" id="record_button">
                 <property name="icon-name">media-record</property>
+                <property name="sensitive">false</property>
               </object>
             </child>
             <child type="end">
