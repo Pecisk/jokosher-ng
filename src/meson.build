@@ -45,6 +45,7 @@ jokosher_sources = [
   'levelslist.py',
   'projectutilities.py',
   'transportmanager.py',
+  'instrumentinfopane.py',
 ]
 
 install_data(jokosher_sources, install_dir: moduledir)

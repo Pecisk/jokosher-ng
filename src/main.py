@@ -54,6 +54,9 @@ class JokosherApplication(Adw.Application):
         necessary.
         """
         Gst.init(None)
+        Gst.debug_set_active(True)
+        #Gst.debug_set_default_threshold(5)
+        Gst.debug_set_threshold_from_string("nle*:3", False)
         win = self.props.active_window
         if not win:
             win = JokosherWindow(application=self)

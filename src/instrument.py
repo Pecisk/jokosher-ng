@@ -477,3 +477,35 @@ class Instrument(GObject.GObject):
             self.playghostpad.remove_probe(probe_id)
             Globals.debug("linked instrument playbackbin to adder (project)")
 
+    def PrepareController(self):
+        """
+        Fills the Gst.Controller for this Instrument with its list of fade times.
+        """
+
+        Globals.debug("Preparing the controller")
+        # set the length of the operation to be the full length of the project
+        self.volumeFadeOperation.set_property("duration", self.project.GetProjectLength() * Gst.SECOND)
+        self.volumeFadeController.unset_all()
+        firstpoint = False
+        for ev in self.events:
+            if not ev.audioFadePoints:
+                #there are no fade points, so just make it 100% all the way through
+                for point, vol in ((ev.start, 0.99), (ev.start+ev.duration, 0.99)):
+                    Globals.debug("FADE POINT: time(%.2f) vol(%.2f)" % (point, vol))
+                    self.volumeFadeController.set((point) * Gst.SECOND, vol)
+                continue
+
+            for point in ev.audioFadePoints:
+                if ev.start + point[0] == 0.0:
+                    firstpoint = True
+                #FIXME: remove vol=0.99 when Gst.Controller is fixed to accept many consecutive 1.0 values.
+                if point[1] == 1.0:
+                    vol = 0.99
+                else:
+                    vol = point[1]
+                Globals.debug("FADE POINT: time(%.2f) vol(%.2f)" % (ev.start + point[0], vol))
+                self.volumeFadeController.set((ev.start + point[0]) * Gst.SECOND, vol)
+        if not firstpoint:
+            Globals.debug("Set extra zero fade point")
+            self.volumeFadeController.set(0, 0.99)
+

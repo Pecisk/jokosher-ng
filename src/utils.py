@@ -124,6 +124,7 @@ class Utils():
             if node.nodeType == xml.dom.Node.ELEMENT_NODE:
                 value = cls.load_variable_from_node(node)
                 setattr(obj, node.tagName, value)
+                print(node.tagName, value)
 
     @classmethod
     def load_variable_from_node(cls, node, typeAttr="type", valueAttr="value"):
@@ -256,3 +257,16 @@ class Utils():
                     key = node.tagName
                 value = cls.load_variable_from_node(node, "type", "value")
                 dictionary[key] = value
+
+    @classmethod
+    def DbToFloat(cls, f):
+        """
+        Converts f from the decibel scale to a float.
+
+        Parameters:
+            f -- number in decibel format.
+
+        Returns:
+            a float in the [0,1] range.
+        """
+        return pow(10., f / 20.)

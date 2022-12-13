@@ -51,14 +51,22 @@ class JokosherWindow(Adw.ApplicationWindow):
 
         # add play/stop/record hooks
         self.play_button.connect("toggled", self.play_button_cb)
-        self.stop_button.connect("toggled", self.stop_button_cb)
+        # FIXME make stop button regular one
+        self.stop_button.connect("clicked", self.stop_button_cb)
         self.record_button.connect("toggled", self.record_button_cb)
 
     def play_button_cb(self, button):
+        self.project.Play()
         print(button.get_active())
 
     def stop_button_cb(self, button):
-        print(button.get_active())
+        if self.play_button.get_active():
+            # stop playing
+            self.play_button.set_active(False)
+            self.project.Stop()
+        if self.record_button.get_active():
+            # stop playing
+            self.record_button.set_active(False)
 
     def record_button_cb(self, button):
         print(button.get_active())
@@ -129,4 +137,5 @@ class JokosherWindow(Adw.ApplicationWindow):
 
     # def on_add_audio_cb(source_object, res, user_data):
     #     self.add_audio_dialog.open_finish(res)
+
 

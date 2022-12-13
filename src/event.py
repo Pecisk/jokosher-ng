@@ -66,7 +66,7 @@ class Event(GObject.GObject):
         self.loadingPipeline = None    # The Gstreamer pipeline used to load the waveform
         self.bus = None            # The bus to monitor messages on the loadingPipeline
 
-        self.CreateFilesource()
+        #self.CreateFilesource()
 
         # a private dictionary containing the audio fade point times as keys
         # and the volume for that point between 0 and 1 as the values.
@@ -106,6 +106,7 @@ class Event(GObject.GObject):
         It then calls SetProperties() to populate the new object's
         properties.
         """
+        return
         Globals.debug("create file source")
 
         compositionElements = self.instrument.composition.iterate_elements()
@@ -118,9 +119,13 @@ class Event(GObject.GObject):
         if not self.gnlsrc:
             self.gnlsrc = Gst.ElementFactory.make("nlesource", "Event_%d"%self.id)
         if not self.gnlsrc in compositionElementsList:
+            print("***** Adding event object to composition")
             self.instrument.composition.add(self.gnlsrc)
             self.instrument.composition.emit("commit", True)
         self.SetProperties()
+        self.instrument.composition.emit("commit", True)
+        for pad in self.instrument.composition.pads:
+            print(pad.get_peer())
 
     #_____________________________________________________________________
 
@@ -138,6 +143,8 @@ class Event(GObject.GObject):
         """
         Sets basic Event properties like location, start, duration, etc.
         """
+        Globals.debug('hitting SetProperties')
+        Globals.debug(self.file)
         if self.file:
             if self.single_decode_bin:
                 self.gnlsrc.remove(self.single_decode_bin)
@@ -150,8 +157,13 @@ class Event(GObject.GObject):
             self.single_decode_bin = Gst.ElementFactory.make("nleurisource", "singledecodebin")
             self.single_decode_bin.set_property("uri", f)
             self.single_decode_bin.set_property("caps", caps)
+            # self.single_decode_bin = Gst.ElementFactory.make("playbin", "singledecodebin")
+            # self.single_decode_bin.set_property("uri", f)
+            #self.single_decode_bin.set_property("caps", caps)
             self.gnlsrc.add(self.single_decode_bin)
 
+            for child_element in self.gnlsrc.iterate_elements():
+                print(child_element)
             Globals.debug("setting event properties:")
             propsDict = {
                     "caps" : caps,
@@ -161,7 +173,7 @@ class Event(GObject.GObject):
                     "priority" : 2
                     }
 
-            for prop, value in propsDict.iteritems():
+            for prop, value in propsDict.items():
                 self.gnlsrc.set_property(prop, value)
                 Globals.debug("\t", prop, "=", value)
 

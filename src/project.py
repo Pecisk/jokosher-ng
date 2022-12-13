@@ -17,6 +17,9 @@ from .transportmanager import TransportManager
 
 class Project(GObject.GObject):
 
+    """ The audio playback state enum values """
+    AUDIO_STOPPED, AUDIO_RECORDING, AUDIO_PLAYING, AUDIO_PAUSED, AUDIO_EXPORTING = range(5)
+
     __gsignals__ = {
         "audio-state"        : ( GObject.SIGNAL_RUN_LAST | GObject.SIGNAL_DETAILED, GObject.TYPE_NONE, () ),
         "bpm"            : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, () ),
@@ -51,7 +54,7 @@ class Project(GObject.GObject):
         self.viewScale = 25.0        #View scale as pixels per second
         self.viewStart= 0.0            #View offset in seconds
         self.soloInstrCount = 0        #number of solo instruments (to know if others must be muted)
-        #self.audioState = self.AUDIO_STOPPED    #which audio state we are currently in
+        self.audioState = self.AUDIO_STOPPED    #which audio state we are currently in
         self.exportPending = False    # True if we are waiting to start an export
         self.exportFilename = ""
         self.bpm = 120
@@ -632,11 +635,52 @@ class Project(GObject.GObject):
         self.DumpDotFile()
 
         #If we've been recording then add new events to instruments
-        for instr, (event, bin, handle) in self.recordingEvents.iteritems():
+        for instr, (event, bin, handle) in self.recordingEvents.items():
             instr.FinalizeRecording(event)
             self.bus.disconnect(handle)
 
         self.TerminateRecording()
+
+    def TerminateRecording(self):
+        """
+        Terminate all instruments. Disregards recording when an
+        error occurs after instruments have started.
+        """
+        Globals.debug("Terminating recording.")
+        self.transport.Stop()
+        Globals.debug("State just set to READY")
+
+        #Relink instruments and stop their recording bins
+        for instr, (event, bin, handle) in self.recordingEvents.items():
+            try:
+                Globals.debug("Removing recordingEvents bin")
+                self.mainpipeline.remove(bin)
+            except:
+                pass #Already removed from another instrument
+            Globals.debug("set state to NULL")
+            bin.set_state(Gst.State.NULL)
+            instr.AddAndLinkPlaybackbin()
+
+        self.recordingEvents = {}
+
+    def SetAudioState(self, newState):
+        """
+        Set the Project's audio state to the new state enum value.
+
+        Parameters:
+            newState -- the new state to set the Project to.
+        """
+        self.audioState = newState
+        if newState == self.AUDIO_PAUSED:
+            self.emit("audio-state::pause")
+        elif newState == self.AUDIO_PLAYING:
+            self.emit("audio-state::play")
+        elif newState == self.AUDIO_STOPPED:
+            self.emit("audio-state::stop")
+        elif newState == self.AUDIO_RECORDING:
+            self.emit("audio-state::record")
+        elif newState == self.AUDIO_EXPORTING:
+            self.exportPending = False
 
     def PrepareClick(self):
         """
@@ -684,6 +728,60 @@ class Project(GObject.GObject):
         """
         self.clickTrackController.unset_all()
 
+    def GetProjectLength(self):
+        """
+        Returns the length of the Project.
+
+        Returns:
+            lenght of the Project in seconds.
+        """
+        length = 0
+        for instr in self.instruments:
+            for event in instr.events:
+                size = event.start + max(event.duration, event.loadingLength)
+                length = max(length, size)
+        return length
+
+    def GetIsPlaying(self):
+        """
+        Returns true if the Project is not in the stopped state,
+        because paused, playing and recording are all forms of playing.
+        """
+        return self.audioState != self.AUDIO_STOPPED
+
+    #_____________________________________________________________________
+
+    def GetIsRecording(self):
+        """
+        Returns true if the Project is in the recording state.
+        """
+        return self.audioState == self.AUDIO_RECORDING
+
+    #_____________________________________________________________________
+
+    def GetIsExporting(self):
+        """
+        Returns true if the Project is not in the stopped state,
+        because paused, playing and recording are all forms of playing.
+        """
+        return self.audioState == self.AUDIO_EXPORTING
+
+    def DumpDotFile(self):
+        basepath, ext = os.path.splitext(self.projectfile)
+        name = "jokosher-pipeline-" + os.path.basename(basepath)
+        Gst.debug_bin_to_dot_file_with_ts(self.mainpipeline, Gst.DebugGraphDetails.ALL, "/home/peteriskrisjanis/" + name)
+        Globals.debug("Dumped pipeline to DOT file:", name)
+        Globals.debug("Command to render DOT file: dot -Tsvg -o pipeline.svg <file>")
+
+    def SetLevel(self, level):
+        """
+        Sets the current REPORTED level, NOT THE VOLUME!
+
+        Parameters:
+            level -- a value in the range [0,1]
+        """
+        self.level = level
+
 class CreateProjectError(Exception):
     """
     This class will get created when creating a Project fails.
@@ -706,3 +804,4 @@ class CreateProjectError(Exception):
         Exception.__init__(self)
         self.errno = errno
         self.message = message
+

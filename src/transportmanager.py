@@ -97,7 +97,6 @@ class TransportManager(GObject.GObject):
             self.SeekTo(self.position, self.stopPosition)
             #clear stopPosition in case it has been set by previous SeekTo()
             self.stopPosition = 0
-
         self.pipeline.set_state(Gst.State.PLAYING)
         #for normal playback then we need to start the timeout that will
         #control the movement of the playhead

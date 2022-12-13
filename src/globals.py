@@ -10,7 +10,7 @@ class Globals:
 
     @staticmethod
     def debug(*listToPrint):
-        DEBUG_STDOUT = 0
+        DEBUG_STDOUT = 1
         """
         Global debug function to redirect all the debugging output from the other
         methods.

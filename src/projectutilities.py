@@ -114,7 +114,7 @@ class FormatOneZero:
 				id = int(ev.getAttribute("id"))
 			except ValueError:
 				id = None
-			event = Event.Event(instr, None, id)
+			event = Event(instr, None, id)
 			self.LoadEvent(event, ev, True)
 			instr.graveyard.append(event)
 
@@ -165,6 +165,8 @@ class FormatOneZero:
 	    """
 	    params = xmlNode.getElementsByTagName("Parameters")[0]
 
+        # FIXE we hit SetProperties two times, which is not entirely efficient
+        # first time without properties, second time with these params loaded
 	    Utils.load_params_from_xml(event, params)
 
 	    try:
@@ -186,7 +188,7 @@ class FormatOneZero:
 			    if not event.levels_list:
 				    event.GenerateWaveform()
 		    # event._Event__UpdateAudioFadePoints()
-		    # event.CreateFilesource()
+		    event.CreateFilesource()
 
 class ProjectUtilities:
 
