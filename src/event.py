@@ -66,7 +66,7 @@ class Event(GObject.GObject):
         self.loadingPipeline = None    # The Gstreamer pipeline used to load the waveform
         self.bus = None            # The bus to monitor messages on the loadingPipeline
 
-        #self.CreateFilesource()
+        self.CreateFilesource()
 
         # a private dictionary containing the audio fade point times as keys
         # and the volume for that point between 0 and 1 as the values.
@@ -106,7 +106,7 @@ class Event(GObject.GObject):
         It then calls SetProperties() to populate the new object's
         properties.
         """
-        return
+
         Globals.debug("create file source")
 
         compositionElements = self.instrument.composition.iterate_elements()

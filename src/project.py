@@ -769,7 +769,7 @@ class Project(GObject.GObject):
     def DumpDotFile(self):
         basepath, ext = os.path.splitext(self.projectfile)
         name = "jokosher-pipeline-" + os.path.basename(basepath)
-        Gst.debug_bin_to_dot_file_with_ts(self.mainpipeline, Gst.DebugGraphDetails.ALL, "/home/peteriskrisjanis/" + name)
+        Gst.debug_bin_to_dot_file_with_ts(self.mainpipeline, Gst.DebugGraphDetails.ALL, name)
         Globals.debug("Dumped pipeline to DOT file:", name)
         Globals.debug("Command to render DOT file: dot -Tsvg -o pipeline.svg <file>")
 

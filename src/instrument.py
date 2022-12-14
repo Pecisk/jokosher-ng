@@ -131,8 +131,8 @@ class Instrument(GObject.GObject):
 
         self.volumeFadeOperation.add(self.volumeFadeBin)
         self.silentGnlSource.add(self.silenceAudioSource)
-        self.composition.add(self.silentGnlSource)
-        self.composition.add(self.volumeFadeOperation)
+        # self.composition.add(self.silentGnlSource)
+        # self.composition.add(self.volumeFadeOperation)
 
         # LINK GSTREAMER ELEMENTS #
         self.effectsBinConvert.link(self.effectsBinCaps)
@@ -154,8 +154,16 @@ class Instrument(GObject.GObject):
         self.composition.connect("pad-added", self.__PadAddedCb)
         self.composition.connect("pad-removed", self.__PadRemovedCb)
 
+        self.composition.add(self.silentGnlSource)
+        self.composition.add(self.volumeFadeOperation)
+
         # commit all Gnl elements
         self.composition.emit("commit", True)
+
+        for pad in self.composition.pads:
+            convpad = self.effectsBin.get_compatible_pad(pad, pad.query_caps(None))
+            pad.link(convpad)
+            break
 
         #mute this instrument if another one is solo
         self.OnMute()
@@ -508,4 +516,16 @@ class Instrument(GObject.GObject):
         if not firstpoint:
             Globals.debug("Set extra zero fade point")
             self.volumeFadeController.set(0, 0.99)
+
+    def SetLevel(self, level):
+        """
+        Sets the level of this Instrument.
+
+        Considerations:
+            This sets the current REPORTED level, NOT THE VOLUME!
+
+        Parameters:
+            level -- new level value in a [0,1] range.
+        """
+        self.level = level
 

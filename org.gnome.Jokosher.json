@@ -10,7 +10,8 @@
         "--socket=fallback-x11",
         "--device=dri",
         "--socket=wayland",
-        "--socket=pulseaudio"
+        "--socket=pulseaudio",
+        "--env=GST_DEBUG_DUMP_DOT_DIR=/home/peteriskrisjanis"
     ],
     "cleanup" : [
         "/include",
