@@ -382,8 +382,10 @@ class TransportManager(GObject.GObject):
         """
         Reads the current playhead cursor position by querying pipeline.
         """
-        pos = self.pipeline.query_position(Gst.Format.TIME)[0]
+        pos = self.pipeline.query_position(Gst.Format.TIME)[1]
+        print(pos)
         self.SetPosition(float(pos) / Gst.SECOND)
+        print(self.position)
 
     #_____________________________________________________________________
 

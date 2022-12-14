@@ -160,6 +160,7 @@ class Instrument(GObject.GObject):
         # commit all Gnl elements
         self.composition.emit("commit", True)
 
+        # FIXME bind composition src pad manually for now, but it should have worked via callback
         for pad in self.composition.pads:
             convpad = self.effectsBin.get_compatible_pad(pad, pad.query_caps(None))
             pad.link(convpad)

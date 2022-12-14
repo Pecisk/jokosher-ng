@@ -1,6 +1,7 @@
 from gi.repository import Gtk, Graphene
 from .eventviewer import EventViewer
 from .project import Project
+import cairo
 
 class EventLineViewer(Gtk.Box):
     def __init__(self, instrument, instrument_viewer):
@@ -17,7 +18,7 @@ class EventLineViewer(Gtk.Box):
         self.fixed.set_property('halign', Gtk.Align.FILL)
 
         # signals
-        # self.project.transport.connect("position", self.OnTransportPosition)
+        self.project.transport.connect("position", self.OnTransportPosition)
         # self.project.connect("view-start", self.OnProjectViewChange)
         # self.project.connect("zoom", self.OnProjectViewChange)
         self.instrument.connect("event::removed", self.on_event_removed)
@@ -87,5 +88,42 @@ class EventLineViewer(Gtk.Box):
         pass
 
     def OnDraw(self, cairo_ctx):
-        pass
+        """
+        Called everytime the window is drawn.
+        Handles the drawing of the lane edges and vertical line cursors.
+
+        Parameters:
+            widget -- GTK widget to be repainted.
+            event -- reserved for GTK callbacks, don't use it explicitly.
+        """
+        print("hitting EventLineViewer draw")
+        transport = self.project.transport
+        print(transport.GetPixelPosition())
+        # Draw play cursor position
+        # set color
+        cairo_ctx.set_source_rgb(1.0, 0.0, 0.0) # red
+        x = transport.GetPixelPosition()
+        # set line width and cap
+        cairo_ctx.set_line_width(1.0)
+        cairo_ctx.set_line_cap(cairo.LINE_CAP_SQUARE)
+        # draw line
+        cairo_ctx.move_to (x, 0)
+        cairo_ctx.line_to (x, self.get_allocation().height)
+        cairo_ctx.stroke()
+
+    def OnTransportPosition(self, transportManager, extraString):
+        """
+        Callback for signal when the transport position changes.
+        Here we just redraw the playhead.
+
+        Parameters:
+            transportManager -- the TransportManager instance that send the signal.
+            extraString -- a string specifying the extra action details. i.e. "stop-action"
+                    means that the position changed because the user hit stop.
+        """
+        prev_pos = self.project.transport.GetPreviousPixelPosition()
+        new_pos = self.project.transport.GetPixelPosition()
+        # self.queue_draw_area(prev_pos - 1, 0, 3, self.get_allocated_height())
+        # self.queue_draw_area(new_pos - 1, 0, 3, self.get_allocated_height())
+        self.queue_draw()
     
