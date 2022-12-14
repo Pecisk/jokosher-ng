@@ -1,0 +1,6 @@
+[core]
+icon = violin.png
+type = violin
+
+[i18n]
+en = Violin

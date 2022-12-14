@@ -1,0 +1,6 @@
+[core]
+icon = bassdrum.png
+type = bassdrum
+
+[i18n]
+en = Bass Drum

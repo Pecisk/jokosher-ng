@@ -1,0 +1,6 @@
+[core]
+icon = acousticguitar.png
+type = acousticguitar
+
+[i18n]
+en = Acoustic Guitar

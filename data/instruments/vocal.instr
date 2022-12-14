@@ -1,0 +1,6 @@
+[core]
+icon = vocal.png
+type = vocal
+
+[i18n]
+en = Vocal

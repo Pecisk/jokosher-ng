@@ -7,6 +7,7 @@ from .project import Project
 class RecordingView(Gtk.Frame):
     def __init__(self):
         Gtk.Frame.__init__(self)
+        print("********* initialising recordview")
         self.project = Project.get_current_project()
         self.general_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.set_child(self.general_box)

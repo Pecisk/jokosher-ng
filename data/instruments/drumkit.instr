@@ -1,0 +1,6 @@
+[core]
+icon = drumkit.png
+type = drumkit
+
+[i18n]
+en = Drum Kit

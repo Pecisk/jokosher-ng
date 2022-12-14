@@ -12,6 +12,11 @@ class Workspace(Gtk.Paned):
         self.horizontal_pane = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
         self.horizontal_pane.set_end_child(self.recordingview)
         self.horizontal_pane.set_start_child(self.instrumentInfoPane)
+        # FIXME take only space boxes require
+        self.instrumentInfoPane.set_property('hexpand', False)
+        self.instrumentInfoPane.set_size_request(-1, 0)
+        #self.instrumentInfoPane.set_property('halign', Gtk.Align.FILL)
+
 
         self.set_start_child(self.horizontal_pane)
         self.set_end_child(Gtk.Frame())

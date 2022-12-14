@@ -17,6 +17,9 @@ class Settings:
     Handles loading/saving settings from/to a file on disk.
     """
 
+    # FIXME dynamic?
+    TIMELINE_HEIGHT = 50
+
     # the different settings in each config block
     general =     {
                 # increment each time there is an incompatible change with the config file

@@ -1,0 +1,6 @@
+[core]
+icon = effect.png
+type = effect
+
+[i18n]
+en = Effect

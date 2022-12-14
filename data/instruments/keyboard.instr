@@ -1,0 +1,6 @@
+[core]
+icon = keyboard.png
+type = keyboard
+
+[i18n]
+en = Keyboard

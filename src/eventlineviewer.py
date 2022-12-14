@@ -72,7 +72,7 @@ class EventLineViewer(Gtk.Box):
     def do_snapshot(self, snapshot):
         # do children first
         Gtk.Widget.do_snapshot(self, snapshot)
-        # draw what we need to draw
+        # draw cursor over them
         rect = Graphene.Rect()
         rect.init(0, 0, self.get_width(), self.get_height())
         self.OnDraw(snapshot.append_cairo(rect))
@@ -96,9 +96,7 @@ class EventLineViewer(Gtk.Box):
             widget -- GTK widget to be repainted.
             event -- reserved for GTK callbacks, don't use it explicitly.
         """
-        print("hitting EventLineViewer draw")
         transport = self.project.transport
-        print(transport.GetPixelPosition())
         # Draw play cursor position
         # set color
         cairo_ctx.set_source_rgb(1.0, 0.0, 0.0) # red
@@ -123,7 +121,5 @@ class EventLineViewer(Gtk.Box):
         """
         prev_pos = self.project.transport.GetPreviousPixelPosition()
         new_pos = self.project.transport.GetPixelPosition()
-        # self.queue_draw_area(prev_pos - 1, 0, 3, self.get_allocated_height())
-        # self.queue_draw_area(new_pos - 1, 0, 3, self.get_allocated_height())
         self.queue_draw()
     

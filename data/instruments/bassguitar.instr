@@ -1,0 +1,6 @@
+[core]
+icon = bassguitar.png
+type = bassguitar
+
+[i18n]
+en = Bass Guitar

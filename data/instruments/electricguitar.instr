@@ -1,0 +1,6 @@
+[core]
+icon = electricguitar.png
+type = electricguitar
+
+[i18n]
+en = Electric Guitar

@@ -1,0 +1,6 @@
+[core]
+icon = tomtom.png
+type = tomtom
+
+[i18n]
+en = Tom Tom

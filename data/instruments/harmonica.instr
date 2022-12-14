@@ -1,0 +1,6 @@
+[core]
+icon = harmonica.png
+type = harmonica
+
+[i18n]
+en = Harmonica

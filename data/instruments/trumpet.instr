@@ -1,0 +1,6 @@
+[core]
+icon = trumpet.png
+type = trumpet
+
+[i18n]
+en = Trumpet

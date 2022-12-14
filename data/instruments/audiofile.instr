@@ -1,0 +1,6 @@
+[core]
+icon = audiofile.png
+type = audiofile
+
+[i18n]
+en = Audio File

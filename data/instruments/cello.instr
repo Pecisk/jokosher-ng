@@ -1,0 +1,6 @@
+[core]
+icon = cello.png
+type = cello
+
+[i18n]
+en = Cello

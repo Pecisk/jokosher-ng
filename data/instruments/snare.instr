@@ -1,0 +1,6 @@
+[core]
+icon = snare.png
+type = snare
+
+[i18n]
+en = Snare

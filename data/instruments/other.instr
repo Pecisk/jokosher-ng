@@ -1,0 +1,6 @@
+[core]
+icon = other.png
+type = other
+
+[i18n]
+en = Other

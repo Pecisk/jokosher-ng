@@ -1,0 +1,6 @@
+[core]
+icon = saxophone.png
+type = saxophone
+
+[i18n]
+en = Saxophone
