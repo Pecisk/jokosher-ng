@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="AddInstrumentDialog" parent="GtkWindow">
+    <property name="title" translatable="yes">Add an instrument</property>
+    <property name="modal">True</property>
+    <child>
+      <object class="GtkBox" id="vbox2">
+        <property name="orientation">vertical</property>
+        <property name="visible">True</property>
+        <property name="spacing">6</property>
+        <child>
+          <object class="GtkLabel" id="instructions">
+            <property name="visible">True</property>
+            <property name="label" translatable="yes">Choose one or more instruments to add to your project.</property>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="hbox10">
+            <property name="orientation">horizontal</property>
+            <property name="visible">True</property>
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkLabel" id="label57">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">_Search:</property>
+                <property name="use_underline">True</property>
+                <property name="mnemonic_widget">instrument_search</property>
+              </object>
+            </child>
+            <child>
+              <object class="GtkEntry" id="instrument_search">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="tooltip_text" translatable="yes">Type here to search for an instrument</property>
+                <property name="invisible_char">●</property>
+                <signal name="changed" handler="on_instrument_search_changed"/>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkScrolledWindow" id="scrolledwindow2">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="hscrollbar_policy">automatic</property>
+            <property name="vscrollbar_policy">automatic</property>
+            <child>
+              <object class="GtkIconView" id="Instruments">
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="hbuttonbox1">
+            <property name="orientation">horizontal</property>
+            <property name="visible">True</property>
+            <property name="spacing">6</property>
+            <child type="end">
+              <object class="GtkButton" id="cancelButton">
+                <property name="label">gtk-cancel</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Don't add an instrument</property>
+                <signal name="clicked" handler="on_Cancel_clicked"/>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkButton" id="okButton">
+                <property name="label">gtk-add</property>
+                <property name="visible">True</property>
+                <property name="can_focus">True</property>
+                <property name="receives_default">False</property>
+                <property name="tooltip_text" translatable="yes">Add the selected instrument</property>
+                <signal name="clicked" handler="on_OK_clicked"/>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

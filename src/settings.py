@@ -4,6 +4,7 @@ import os
 import errno
 import locale
 from configparser import ConfigParser, RawConfigParser
+from gi.repository import GLib, Gio
 
 """ Categories enum """
 class Categories:
@@ -97,21 +98,17 @@ class Settings:
         use paths relative to the current running directory instead of /usr ones.
         """
 
-        self.XDG_RESOURCE_NAME = "jokosher"
-        # Glib.get_user_data_dir / get_user_config_dir
-        #JOKOSHER_CONFIG_HOME = xdg.BaseDirectory.save_config_path(XDG_RESOURCE_NAME)
-        #JOKOSHER_DATA_HOME =   xdg.BaseDirectory.save_data_path(XDG_RESOURCE_NAME)
-        self.JOKOSHER_CONFIG_HOME = '/home/peteriskrisjanis/' + self.XDG_RESOURCE_NAME
-        self.JOKOSHER_DATA_HOME =   '/home/peteriskrisjanis/' + self.XDG_RESOURCE_NAME
+        self.JOKOSHER_CONFIG_HOME = GLib.get_user_config_dir()
+        self.JOKOSHER_DATA_HOME =   GLib.get_user_data_dir()
 
         data_path = os.getenv("JOKOSHER_DATA_PATH")
         if data_path:
-            self.INSTR_PATHS = (os.path.join(data_path, "Instruments"), os.path.join(self.JOKOSHER_DATA_HOME, "instruments"))
+            self.INSTR_PATHS = (os.path.join(data_path, "instruments"), os.path.join(self.JOKOSHER_DATA_HOME, "instruments"))
             self.EXTENSION_PATHS = (os.path.join(data_path, "extensions"), os.path.join(self.JOKOSHER_DATA_HOME, "extensions"))
             self.GTK_BUILDER_PATH = os.path.join(data_path, "gtk-builder-ui")
         else:
             data_path = os.path.dirname(os.path.abspath(__file__))
-            self.INSTR_PATHS = (os.path.join(data_path, "..", "Instruments"), os.path.join(self.JOKOSHER_DATA_HOME, "instruments"))
+            self.INSTR_PATHS = (os.path.join(data_path, "..", "instruments"), os.path.join(self.JOKOSHER_DATA_HOME, "instruments"))
             self.EXTENSION_PATHS = (os.path.join(data_path, "..", "extensions"), os.path.join(self.JOKOSHER_DATA_HOME, "extensions"))
             self.GTK_BUILDER_PATH = os.path.join(data_path, "..", "gtk-builder-ui")
             self.LOCALE_PATH = os.path.join(data_path, "..", "locale")
@@ -133,7 +130,7 @@ class Settings:
         jokosher_dir_empty = (len(os.listdir(self.JOKOSHER_DATA_HOME)) == 0)
         self._HOME_DOT_JOKOSHER = os.path.expanduser("~/.jokosher")
 
-        if jokosher_dir_empty and os.path.isdir(self._HOME_DOT_JOKOSHER):
+        if jokosher_dir_empty and os.path.isdir(_HOME_DOT_JOKOSHER):
             # Copying old config file from ~/.jokosher.
             CopyAllFiles(self._HOME_DOT_JOKOSHER, self.JOKOSHER_CONFIG_HOME, ["config"])
 
@@ -489,3 +486,8 @@ class Settings:
         file.close()
 
         #_____________________________________________________________________
+
+    @staticmethod
+    def get_settings():
+        app = Gio.Application.get_default()
+        return app.settings

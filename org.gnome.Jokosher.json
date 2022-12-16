@@ -11,7 +11,8 @@
         "--device=dri",
         "--socket=wayland",
         "--socket=pulseaudio",
-        "--env=GST_DEBUG_DUMP_DOT_DIR=/home/peteriskrisjanis"
+        "--env=GST_DEBUG_DUMP_DOT_DIR=/home/peteriskrisjanis",
+        "--env=JOKOSHER_DATA_PATH=/app/share/jokosher"
     ],
     "cleanup" : [
         "/include",

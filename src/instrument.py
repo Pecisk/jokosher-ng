@@ -530,3 +530,12 @@ class Instrument(GObject.GObject):
         """
         self.level = level
 
+    @staticmethod
+    def getInstruments():
+        app = Gio.Application.get_default()
+        return app.getCachedInstruments()
+
+    @staticmethod
+    def getCachedInstrumentPixbuf(type):
+        app = Gio.Application.get_default()
+        return app.getCachedInstrumentPixbuf(type)

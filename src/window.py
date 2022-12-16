@@ -24,6 +24,7 @@ from .workspace import Workspace
 from .instrumentviewer import InstrumentViewer
 from .platform_utils import PlatformUtils
 from .project import Project
+from .addinstrumentdialog import AddInstrumentDialog
 
 @Gtk.Template(resource_path='/org/gnome/Jokosher/window.ui')
 class JokosherWindow(Adw.ApplicationWindow):
@@ -72,7 +73,9 @@ class JokosherWindow(Adw.ApplicationWindow):
         print(button.get_active())
 
     def do_add_instrument(self, widget, _):
-        self.project.add_instrument("None", "None")
+        add_instrument_dialog = AddInstrumentDialog(self.project, self)
+        add_instrument_dialog.show()
+        #self.project.add_instrument("None", "None")
 
     def on_open_project(self):
         # FIXME set sensitivity where it needs to be

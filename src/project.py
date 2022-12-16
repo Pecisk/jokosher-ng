@@ -330,8 +330,8 @@ class Project(GObject.GObject):
         Returns:
             The created Instrument object.
         """
-        #pixbuf = Globals.getCachedInstrumentPixbuf(type)
-        instr = Instrument(self, name, type, None)
+        pixbuf = Instrument.getCachedInstrumentPixbuf(type)
+        instr = Instrument(self, name, type, pixbuf)
         if len(self.instruments) == 0:
             #If this is the first instrument, arm it by default
             instr.isArmed = True
@@ -381,8 +381,8 @@ class Project(GObject.GObject):
                 # We've been passed a path, so convert it to a URI
         #         uris.append(PlatformUtils.pathname2url(filename))
 
-        #name, type, pixbuf, path = [x for x in Globals.getCachedInstruments() if x[1] == "audiofile"][0]
-        instr = self.add_instrument("Audio file", "audiofile")
+        name, type, pixbuf, path = [x for x in Instrument.getCachedInstruments() if x[1] == "audiofile"][0]
+        instr = self.add_instrument(name, type)
         instr.add_events_from_files(0, files)
         #instr.add_events_from_list(0, uris)
 
