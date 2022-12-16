@@ -29,7 +29,9 @@ class AddInstrumentDialog(Gtk.Window):
     This class handles all of the processing associated with the Add Instrument dialog.
     """
 
-    Instruments = Gtk.Template.Child()
+    tree = Gtk.Template.Child("Instruments")
+    ok_button = Gtk.Template.Child()
+    cancel_button = Gtk.Template.Child()
 
     def __init__(self, project, parent, instr=None):
         """
@@ -46,7 +48,10 @@ class AddInstrumentDialog(Gtk.Window):
         self.parent = parent
         self.project = project
         self.instr = instr
-        self.tree = self.Instruments
+
+        # connect signals
+        self.ok_button.connect('clicked', self.on_ok_button_clicked)
+        self.cancel_button.connect('clicked', self.on_cancel_button_clicked)
 
         #self.gtk_builder = Globals.LoadGtkBuilderFilename("AddInstrumentDialog.ui")
 
@@ -121,7 +126,7 @@ class AddInstrumentDialog(Gtk.Window):
 
     #_____________________________________________________________________
 
-    def OnOK(self, button=None):
+    def on_ok_button_clicked(self, button):
         """
         This method is called when the ok button in the dialog has been clicked.
         It will then add the selected instrument into the main jokosher window (JokosherApp).
@@ -137,21 +142,21 @@ class AddInstrumentDialog(Gtk.Window):
                 item = self.model[int(i.to_string())]
                 #find the actual instrument using index 1 (the instrument type)
                 #because the name has been wrapped in self.model and can't be used
-                name, type, pixbuf, path = [x for x in Globals.getCachedInstruments() if x[1] == item[1]][0]
+                name, type, pixbuf, path = [x for x in Instrument.getInstruments() if x[1] == item[1]][0]
                 instrList.append( (name, type) )
 
-            self.project.AddInstruments(instrList)
+            self.project.add_instruments(instrList)
         else:
             item = self.model[selectedItems[0][0]]
-            instrItem = [x for x in Globals.getCachedInstruments() if x[1] == item[1]][0]
+            instrItem = [x for x in Instrument.getInstruments() if x[1] == item[1]][0]
             self.instr.ChangeType(instrItem[1], instrItem[0])
 
 
-        self.dlg.destroy()
+        self.destroy()
 
     #_____________________________________________________________________
 
-    def OnCancel(self, button):
+    def on_cancel_button_clicked(self, button):
         """
         Called when the cancel button in the dialog has been clicked.
 
@@ -159,7 +164,7 @@ class AddInstrumentDialog(Gtk.Window):
             button -- reserved for GTK callbacks, dont't use it explicity.
         """
 
-        self.dlg.destroy()
+        self.destroy()
 
     #_____________________________________________________________________
 

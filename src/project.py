@@ -315,6 +315,27 @@ class Project(GObject.GObject):
 
         #self.emit("undo")
 
+    def add_instruments(self, instrTuples):
+        """
+        Adds one or more instruments to the Project, and ensures that
+        they are all appended to the undo stack as a single atomic action.
+
+        Parameters:
+            instrTuples -- a list of tuples containing name and type
+                    that will be passed to AddInstrument().
+
+        Returns:
+            A list of the added Instruments.
+        """
+
+        # undoAction = self.NewAtomicUndoAction()
+        instrList = []
+        for name, type in instrTuples:
+            instr = self.add_instrument(name, type)
+            instrList.append(instr)
+        return instrList
+
+
     def add_instrument(self, name, type):
         """
         Adds a new instrument to the Project and returns the ID for that instrument.

@@ -17,9 +17,10 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuButton">
+              <object class="GtkMenuButton" id="add_menu_button">
                 <property name="icon-name">insert-object</property>
                 <property name="menu-model">add_menu</property>
+                <property name="sensitive">false</property>
               </object>
             </child>
             <child>

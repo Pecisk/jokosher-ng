@@ -60,7 +60,7 @@
             <property name="visible">True</property>
             <property name="spacing">6</property>
             <child type="end">
-              <object class="GtkButton" id="cancelButton">
+              <object class="GtkButton" id="cancel_button">
                 <property name="label">gtk-cancel</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
@@ -70,7 +70,7 @@
               </object>
             </child>
             <child type="end">
-              <object class="GtkButton" id="okButton">
+              <object class="GtkButton" id="ok_button">
                 <property name="label">gtk-add</property>
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>

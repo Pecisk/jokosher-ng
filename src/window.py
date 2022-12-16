@@ -36,6 +36,7 @@ class JokosherWindow(Adw.ApplicationWindow):
     play_button = Gtk.Template.Child()
     stop_button = Gtk.Template.Child()
     record_button = Gtk.Template.Child()
+    add_menu_button = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -79,9 +80,11 @@ class JokosherWindow(Adw.ApplicationWindow):
 
     def on_open_project(self):
         # FIXME set sensitivity where it needs to be
+        # enable widgets we want to be active when project is open
         self.play_button.set_sensitive(True);
         self.stop_button.set_sensitive(True);
         self.record_button.set_sensitive(True);
+        self.add_menu_button.set_sensitive(True);
         self.project = Project.get_current_project()
         self.workspace = Workspace()
         self.general_box.append(self.workspace)

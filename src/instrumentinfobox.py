@@ -12,7 +12,7 @@ class InstrumentInfoBox(Gtk.Box):
         # set box structure for information about instrument
         # instrument icon and name
         self.instrument_icon_and_name = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.instrument_name = Gtk.Label.new("Wave file")
+        self.instrument_name = Gtk.Label.new(self.instrument.name)
         self.instrument_name.set_margin_start(5)
         self.instrument_name.set_margin_end(5)
         self.instrument_name.set_margin_top(5)

@@ -1284,7 +1284,8 @@ class Event(GObject.GObject):
 
         xmlPoints = doc.createElement("FadePoints")
         ev.appendChild(xmlPoints)
-        Utils.store_dictionary_to_xml(doc, xmlPoints, self.__fadePointsDict, "FadePoint")
+        # FIXME restore fade point system
+        #Utils.store_dictionary_to_xml(doc, xmlPoints, self.__fadePointsDict, "FadePoint")
 
         if self.levels_list:
             self.levels_list.tofile(self.GetAbsLevelsFile())
