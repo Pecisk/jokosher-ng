@@ -131,8 +131,8 @@ class Instrument(GObject.GObject):
 
         self.volumeFadeOperation.add(self.volumeFadeBin)
         self.silentGnlSource.add(self.silenceAudioSource)
-        # self.composition.add(self.silentGnlSource)
-        # self.composition.add(self.volumeFadeOperation)
+        self.composition.add(self.silentGnlSource)
+        self.composition.add(self.volumeFadeOperation)
 
         # LINK GSTREAMER ELEMENTS #
         self.effectsBinConvert.link(self.effectsBinCaps)
