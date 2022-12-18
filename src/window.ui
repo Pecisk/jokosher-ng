@@ -52,6 +52,18 @@
                 <property name="menu-model">preferences_menu</property>
               </object>
             </child>
+            <child type="end">
+              <object class="GtkToggleButton" id="mixer_button">
+                <property name="icon-name">audio-volume-high</property>
+                <property name="sensitive">false</property>
+              </object>
+            </child>
+            <child type="end">
+              <object class="GtkToggleButton" id="scale_show_button">
+                <property name="icon-name">zoom-in</property>
+                <property name="sensitive">false</property>
+              </object>
+            </child>
           </object>
         </child>
       </object>

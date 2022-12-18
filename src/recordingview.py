@@ -23,33 +23,34 @@ class RecordingView(Gtk.Frame):
         self.instrumentWindow.set_child(self.instrumentBox)
         #self.instrumentWindow.set_size_request(500, -1)
         self.general_box.append(self.instrumentWindow)
-        self.hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.hb.set_spacing(6)
+        # FIXME remove when adding scaling support somewhere else
+        # self.hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        # self.hb.set_spacing(6)
         #self.hb.set_border_width(6)
-        self.general_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
-        self.general_box.append(self.hb)
+        # self.general_box.append(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+        # self.general_box.append(self.hb)
 
-        self.zoom_hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-        self.zoom_hb.set_spacing(6)
+        # self.zoom_hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        # self.zoom_hb.set_spacing(6)
         #self.zoom_hb.set_border_width(0)
         #self.header_size_group.add_widget(self.zoom_hb)
 
-        self.scrollRange = Gtk.Adjustment()
-        self.scrollBar = Gtk.Scrollbar(orientation=Gtk.Orientation.HORIZONTAL,adjustment=self.scrollRange)
+        # self.scrollRange = Gtk.Adjustment()
+        # self.scrollBar = Gtk.Scrollbar(orientation=Gtk.Orientation.HORIZONTAL,adjustment=self.scrollRange)
 
-        self.hb.prepend(self.scrollBar)
-        self.hb.prepend(self.zoom_hb)
-        self.scrollBar.set_property('hexpand', True)
-        self.scrollBar.set_property('halign', Gtk.Align.FILL)
+        # self.hb.prepend(self.scrollBar)
+        # self.hb.prepend(self.zoom_hb)
+        # self.scrollBar.set_property('hexpand', True)
+        # self.scrollBar.set_property('halign', Gtk.Align.FILL)
 
-        self.zoomSlider = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
-        self.zoomSlider.set_size_request(100, -1)
+        # self.zoomSlider = Gtk.Scale(orientation=Gtk.Orientation.HORIZONTAL)
+        # self.zoomSlider.set_size_request(100, -1)
 
-        self.zoomSlider.set_range(5.0, 100.0)
-        self.zoomSlider.set_increments(0.2, 0.2)
-        self.zoomSlider.set_draw_value(False)
+        # self.zoomSlider.set_range(5.0, 100.0)
+        # self.zoomSlider.set_increments(0.2, 0.2)
+        # self.zoomSlider.set_draw_value(False)
 
-        self.zoom_hb.prepend(self.zoomSlider)
+        # self.zoom_hb.prepend(self.zoomSlider)
 
         self.project.connect("instrument::added", self.on_add_instrument)
 

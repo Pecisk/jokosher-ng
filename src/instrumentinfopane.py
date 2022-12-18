@@ -34,4 +34,4 @@ class InstrumentInfoPane(Gtk.Box):
 
     def on_instrument_added(self, project, instrument):
         self.instrument_info_box = InstrumentInfoBox(instrument=instrument)
-        self.instrument_info_pane_scrollable.append(self.instrument_info_box)
+        self.instrument_info_pane_scrollable.append(self.instrument_info_box)   

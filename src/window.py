@@ -37,6 +37,8 @@ class JokosherWindow(Adw.ApplicationWindow):
     stop_button = Gtk.Template.Child()
     record_button = Gtk.Template.Child()
     add_menu_button = Gtk.Template.Child()
+    mixer_button = Gtk.Template.Child()
+    scale_show_button = Gtk.Template.Child()
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
