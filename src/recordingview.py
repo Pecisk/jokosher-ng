@@ -14,6 +14,7 @@ class RecordingView(Gtk.Frame):
         self.timelinebar = TimeLineBar()
         self.general_box.prepend(self.timelinebar)
         self.instrumentWindow = Gtk.ScrolledWindow()
+
         self.instrumentBox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
         self.instrumentBox.set_property('vexpand', True)

@@ -402,7 +402,7 @@ class Project(GObject.GObject):
                 # We've been passed a path, so convert it to a URI
         #         uris.append(PlatformUtils.pathname2url(filename))
 
-        name, type, pixbuf, path = [x for x in Instrument.getCachedInstruments() if x[1] == "audiofile"][0]
+        name, type, pixbuf, path = [x for x in Instrument.getInstruments() if x[1] == "audiofile"][0]
         instr = self.add_instrument(name, type)
         instr.add_events_from_files(0, files)
         #instr.add_events_from_list(0, uris)
