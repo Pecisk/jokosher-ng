@@ -22,7 +22,8 @@ class Instrument(GObject.GObject):
         "selected"    : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, () ),
         "solo"        : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, () ),
         "visible"    : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, () ),
-        "volume"        : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, () )
+        "volume"        : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, () ),
+        "level"        : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, () ),
     }
 
     def __init__(self, project, name, type, pixbuf, id=None):
@@ -529,6 +530,8 @@ class Instrument(GObject.GObject):
             level -- new level value in a [0,1] range.
         """
         self.level = level
+        # FIXME related to showing fill level to level
+        # self.emit("level")
 
     @staticmethod
     def getInstruments():
