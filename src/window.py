@@ -55,9 +55,15 @@ class JokosherWindow(Adw.ApplicationWindow):
 
         # add play/stop/record hooks
         self.play_button.connect("toggled", self.play_button_cb)
-        # FIXME make stop button regular one
         self.stop_button.connect("clicked", self.stop_button_cb)
         self.record_button.connect("toggled", self.record_button_cb)
+        self.mixer_button.connect("toggled", self.mixer_button_cb)
+
+    def mixer_button_cb(self, button):
+        if button.get_active():
+            self.workspace.mixer_strip.show()
+        else:
+            self.workspace.mixer_strip.hide()
 
     def play_button_cb(self, button):
         self.project.Play()
@@ -87,6 +93,8 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.stop_button.set_sensitive(True);
         self.record_button.set_sensitive(True);
         self.add_menu_button.set_sensitive(True);
+        self.mixer_button.set_sensitive(True);
+        self.scale_show_button.set_sensitive(True);
         self.project = Project.get_current_project()
         self.workspace = Workspace()
         self.general_box.append(self.workspace)

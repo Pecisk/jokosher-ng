@@ -16,7 +16,11 @@ class Workspace(Gtk.Paned):
         self.horizontal_pane.set_start_child(self.instrumentInfoPane)
         # FIXME take only space boxes require
         self.instrumentInfoPane.set_property('hexpand', False)
-        self.instrumentInfoPane.set_size_request(-1, 0)
+        self.instrumentInfoPane.set_size_request(150, -1)
+        self.horizontal_pane.set_resize_start_child(False)
+        self.horizontal_pane.set_shrink_start_child(False)
+        self.horizontal_pane.set_resize_end_child(True)
+        self.horizontal_pane.set_shrink_end_child(False)
         #self.instrumentInfoPane.set_property('halign', Gtk.Align.FILL)
 
         self.set_start_child(self.horizontal_pane)
@@ -24,6 +28,10 @@ class Workspace(Gtk.Paned):
         self.set_end_child(self.mixer_strip)
         self.mixer_strip.set_property('vexpand', True)
         self.mixer_strip.set_property('valign', Gtk.Align.FILL)
+        self.mixer_strip.hide()
+
+        # set resize / shrink for children
+
 
         # listen to recording view and instrument info pane adjustment of vertical scroll bar
         # we need to get vertical scroll bar of scrolled window, and get adjustment object from it
