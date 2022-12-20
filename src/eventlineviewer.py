@@ -41,7 +41,7 @@ class EventLineViewer(Gtk.Box):
         self.add_controller(self.mouse_controller)
         self.motion_controller = Gtk.EventControllerMotion()
         self.add_controller(self.motion_controller)
-
+        self.mouse_controller.set_propagation_phase(Gtk.PropagationPhase.TARGET)
         self.mouse_controller.connect("pressed", self.on_mouse_down)
         self.motion_controller.connect("motion", self.on_mouse_move)
         self.motion_controller.connect("leave", self.on_mouse_leave)
@@ -78,8 +78,20 @@ class EventLineViewer(Gtk.Box):
         self.OnDraw(snapshot.append_cairo(rect))
 
 
-    def on_mouse_down(self, widget, mouse_event):
-        pass
+    def on_mouse_down(self, press_count, press_x, press_y, user_data):
+        print("EventLineViewer on_mouse_down !!!!!!!!!!!!")
+        # which button gets clicked - 1 is primary, 3 - secondary, 2 - middle scroll
+        button = self.mouse_controller.get_current_button()
+        # GDK control mask
+        state_mask = self.mouse_controller.get_current_event_state()
+
+        # if state_mask == 'GDK_CONTROL_MASK':
+        #     self.instrument.SetSelected(True)
+        # else:
+        #     self.project.clear_event_selections()
+        #     self.project.select_instrument(self.instrument)
+
+        return True
 
     def on_mouse_move(self, x, y, user_data):
         pass
@@ -122,4 +134,3 @@ class EventLineViewer(Gtk.Box):
         prev_pos = self.project.transport.GetPreviousPixelPosition()
         new_pos = self.project.transport.GetPixelPosition()
         self.queue_draw()
-    

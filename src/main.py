@@ -49,6 +49,11 @@ class JokosherApplication(Adw.Application):
         # setup global variables
         self.settings = Settings()
 
+        # some project states
+        self.isRecording = False
+        self.isPlaying = False
+        self.isPaused = False
+
         # instrument cache
         self.instrumentPropertyList = []
         self._alreadyCached = False
@@ -294,6 +299,17 @@ class JokosherApplication(Adw.Application):
         self.instrumentPropertyList.sort(key=lambda x: x[0].lower())
         #Stop idle_add from calling us again
         return False
+
+    def on_play(self):
+        # flipping bit
+        self.isPlaying = True
+        # let's play active project
+        self.project.Play()
+
+    def on_stop(self):
+        self.isPlaying = False
+        self.project.Stop()
+
 
 def main(version):
     """The application's entry point."""

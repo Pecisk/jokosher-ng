@@ -922,7 +922,7 @@ class Event(GObject.GObject):
 
     #_____________________________________________________________________
 
-    def SetSelected(self, sel):
+    def set_selected(self, selected):
         """
         Enables or disables the selection state for this Event.
 
@@ -932,8 +932,8 @@ class Event(GObject.GObject):
                     False = the Event has been deselected.
         """
         # No need to emit a signal when there is no change in selection state
-        if self.isSelected is not sel:
-            self.isSelected = sel
+        if self.isSelected is not selected:
+            self.isSelected = selected
             self.emit("selected")
 
     #_____________________________________________________________________
@@ -1291,4 +1291,5 @@ class Event(GObject.GObject):
             self.levels_list.tofile(self.GetAbsLevelsFile())
         # if self.GetAbsLevelsFile() in self.instrument.project.deleteOnCloseAudioFiles:
         #     self.instrument.project.deleteOnCloseAudioFiles.remove(self.GetAbsLevelsFile()))
+
 

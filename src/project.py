@@ -803,6 +803,14 @@ class Project(GObject.GObject):
         """
         self.level = level
 
+    def clear_event_selections(self):
+        """
+        Clears the selection of any events.
+        """
+        for instr in self.instruments:
+            for event in instr.events:
+                event.set_selected(False)
+
 class CreateProjectError(Exception):
     """
     This class will get created when creating a Project fails.

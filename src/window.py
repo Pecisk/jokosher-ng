@@ -44,6 +44,8 @@ class JokosherWindow(Adw.ApplicationWindow):
         super().__init__(**kwargs)
         # set up project
         self.project = None
+        # bring out application for easy to access
+        self.app = self.get_property('application')
         #self.set_size_request(1000,800)
 
         action = Gio.SimpleAction.new('add_instrument', None)
@@ -66,14 +68,16 @@ class JokosherWindow(Adw.ApplicationWindow):
             self.workspace.mixer_strip.hide()
 
     def play_button_cb(self, button):
-        self.project.Play()
-        print(button.get_active())
+        if button.get_active():
+            self.app.on_play()
+        else:
+            self.app.on_stop()
 
     def stop_button_cb(self, button):
         if self.play_button.get_active():
             # stop playing
             self.play_button.set_active(False)
-            self.project.Stop()
+            self.app.on_stop()
         if self.record_button.get_active():
             # stop playing
             self.record_button.set_active(False)

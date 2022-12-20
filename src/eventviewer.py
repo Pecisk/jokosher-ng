@@ -1,4 +1,4 @@
-from gi.repository import Gtk, Gdk, Graphene
+from gi.repository import Gtk, Gdk, Graphene, Gio
 import cairo
 from .utils import Utils
 import itertools
@@ -74,8 +74,10 @@ class EventViewer(Gtk.DrawingArea):
         # self.connect("focus-out-event", self.OnFocusLost)
         self.key_controller.connect("key-pressed", self.OnKeyPress)
         self.key_controller.connect("key-released", self.OnKeyRelease)
-        self.mouse_controller.connect("released", self.OnMouseUp)
-        self.mouse_controller.connect("pressed", self.OnMouseDown)
+        # we listen to all buttons
+        self.mouse_controller.set_button(0)
+        self.mouse_controller.connect("released", self.on_mouse_up)
+        self.mouse_controller.connect("pressed", self.on_mouse_down)
         self.motion_controller.connect("motion", self.OnMouseMove)
         self.motion_controller.connect("leave", self.OnMouseLeave)
 
@@ -114,7 +116,7 @@ class EventViewer(Gtk.DrawingArea):
         self.event.connect("length", self.OnEventLength)
         self.event.connect("corrupt", self.OnEventCorrupt)
         self.event.connect("loading", self.OnEventLoading)
-        self.event.connect("selected", self.OnEventSelected)
+        self.event.connect("selected", self.on_event_selected)
 
         # This defines where the blue cursor indicator should be drawn (in pixels)
         # self.highlightCursor = None
@@ -154,7 +156,8 @@ class EventViewer(Gtk.DrawingArea):
         # self.drawer.set_sensitive(not self.event.isLoading)
         # self.drawer.show()
 
-        #self.mainview = mainview
+        # we replace mainview with application
+        self.application = Gio.Application.get_default()
         self.messageID = None
         self.volmessageID = None
         self.selmessageID = None
@@ -579,7 +582,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def OnMouseDown(self, widget, mouse):
+    def on_mouse_down(self, press_count, press_x, press_y, user_data):
         """
         Called when the user pressed a mouse button.
         Possible click combinations to capture:
@@ -599,6 +602,12 @@ class EventViewer(Gtk.DrawingArea):
         Returns:
             True -- continue GTK signal propagation. *CHECK*
         """
+
+        # which button gets clicked - 1 is primary, 3 - secondary, 2 - middle scroll
+        button = self.mouse_controller.get_current_button()
+        # GDK control mask
+        state_mask = self.mouse_controller.get_current_event_state()
+
         #Don't allow moving, etc while recording!
         if self.event.instrument.project.GetIsRecording():
             return True #don't let the instrument viewer handle this click
@@ -607,69 +616,72 @@ class EventViewer(Gtk.DrawingArea):
 
         # {L|R}MB: deselect all events, select this event, begin moving the event
         # {L|R}MB+ctrl: select this event without deselecting other events
-        if 'GDK_CONTROL_MASK' not in mouse.state.value_names:
-            self.project.ClearEventSelections()
-            self.project.SelectInstrument(None)
-        self.event.SetSelected(True)
+        # FIXME selections
+        if state_mask != 'GDK_CONTROL_MASK':
+             self.project.clear_event_selections()
+        #     self.project.SelectInstrument(None)
+        self.event.set_selected(True)
 
         #Don't allow editing while playing back.
         #It must be here to avoid afecting the selection behavior
-        if self.mainview.isPlaying or self.mainview.isPaused:
+        if self.application.isPlaying:
             return True
 
         # RMB: context menu
-        if mouse.button == 3:
-            self.ContextMenu(mouse)
-
-        elif mouse.button == 1:
+        # FIXME menu system is completely changed, overhaul
+        # if button == 3:
+        #     self.context_menu(press_x, press_y)
+        # elif button == 1:
             # check to see if the user clicked on the cancel button
-            if self.cancelButtonArea.x <= mouse.x <= self.cancelButtonArea.width+self.cancelButtonArea.x \
-                and self.cancelButtonArea.y <= mouse.y <= self.cancelButtonArea.height+self.cancelButtonArea.y \
-                and self.event.isLoading:
-                self.OnDelete()
-                return True
+            # FIXME
+            # if self.cancelButtonArea.x <= mouse.x <= self.cancelButtonArea.width+self.cancelButtonArea.x \
+            #     and self.cancelButtonArea.y <= mouse.y <= self.cancelButtonArea.height+self.cancelButtonArea.y \
+            #     and self.event.isLoading:
+            #     self.OnDelete()
+            #     return True
 
-            if 'GDK_SHIFT_MASK' in mouse.state.value_names:
+        #     if state_mask == 'GDK_SHIFT_MASK':
                 # LMB+shift: remove any existing selection in this event, begin
                 #   selecting part of this event
-                self.isSelecting = True
-                self.event.selection[0] = self.SecFromPixX(mouse.x)
-                self.fadeMarkers = [100,100]
-                if not self.selmessageID:
-                    self.selmessageID = self.mainview.SetStatusBar(_("<b>Click</b> the buttons below the selection to do something to that portion of audio."))
-            else:
-                if self.fadeMarkersContext and self.fadeMarkersContext.in_fill(mouse.x, mouse.y):
+        #         self.isSelecting = True
+        #         self.event.selection[0] = self.SecFromPixX(mouse.x)
+        #         self.fadeMarkers = [100,100]
+        #         if not self.selmessageID:
+        #             self.selmessageID = self.mainview.SetStatusBar(_("<b>Click</b> the buttons below the selection to do something to that portion of audio."))
+        #     else:
+                # FIXME fade ops
+                # if self.fadeMarkersContext and self.fadeMarkersContext.in_fill(mouse.x, mouse.y):
                     # LMB over a fadeMarker: drag that marker
-                    self.isDraggingFade = True
-                    if mouse.x > self.PixXFromSec(self.event.selection[1]) - self._PIXX_FADEMARKER_WIDTH - 1:
-                        self.fadeBeingDragged = 1
-                        return True
-                    else:
-                        self.fadeBeingDragged = 0
-                        return True
+                #     self.isDraggingFade = True
+                #     if mouse.x > self.PixXFromSec(self.event.selection[1]) - self._PIXX_FADEMARKER_WIDTH - 1:
+                #         self.fadeBeingDragged = 1
+                #         return True
+                #     else:
+                #         self.fadeBeingDragged = 0
+                #         return True
 
-                if mouse.type == Gdk.EventType._2BUTTON_PRESS:
+        #         if press_count == 2:
                     # LMB double-click: split here
-                    self.mouseAnchor[0] = mouse.x
-                    if self.event.isLoading == False:
-                        self.OnSplit(None, mouse.x)
-                    return True
+        #             self.mouseAnchor[0] = press_x
+        #             if self.event.isLoading == False:
+        #                 self.OnSplit(None, press_x)
+        #             return True
 
                 # remove any existing selection in this event
-                self.event.selection = [0,0]
-                if self.drawer.get_parent() == self.lane.fixed:
-                    self.lane.fixed.remove(self.drawer)
-                    if self.volmessageID:   #clear status bar if not already clear
-                        self.mainview.ClearStatusBar(self.volmessageID)
-                        self.volmessageID = None
-                    if self.selmessageID:   #clear status bar if not already clear
-                        self.mainview.ClearStatusBar(self.selmessageID)
-                        self.selmessageID = None
-                self.isDragging = True
+        #         self.event.selection = [0,0]
+        #         if self.drawer.get_parent() == self.lane.fixed:
+        #             self.lane.fixed.remove(self.drawer)
+        #             if self.volmessageID:   #clear status bar if not already clear
+        #                 self.mainview.ClearStatusBar(self.volmessageID)
+        #                 self.volmessageID = None
+        #             if self.selmessageID:   #clear status bar if not already clear
+        #                 self.mainview.ClearStatusBar(self.selmessageID)
+        #                 self.selmessageID = None
+        #         self.isDragging = True
 
-                self.eventStart = self.event.start
-                ptr = Gdk.Display.get_default().get_pointer()
-                self.mouseAnchor = [ptr[1], ptr[2]]
+        #         self.eventStart = self.event.start
+        #         ptr = Gdk.Display.get_default().get_pointer()
+        #         self.mouseAnchor = [ptr[1], ptr[2]]
 
         return True
 
@@ -891,7 +903,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def ContextMenu(self, mouse):
+    def context_menu(self, press_x, press_y):
         """
         Creates a context menu in response to a right click.
 
@@ -901,7 +913,7 @@ class EventViewer(Gtk.DrawingArea):
         self.menu = Gtk.Menu.new()
         splitImg = Gtk.Image()
         splitImg.set_from_file(os.path.join(Globals.IMAGE_PATH, "icon_split.png"))
-        items = [    (_("_Split"), self.OnSplit, True, splitImg, mouse.x),
+        items = [    (_("_Split"), self.OnSplit, True, splitImg, press_x),
                     ("---", None, None, None, None),
                     (_("Cu_t"), self.OnCut, True, Gtk.Image.new_from_stock(Gtk.STOCK_CUT, Gtk.IconSize.MENU), None),
                     (_("_Copy"), self.OnCopy, True, Gtk.Image.new_from_stock(Gtk.STOCK_COPY, Gtk.IconSize.MENU), None),
@@ -930,14 +942,14 @@ class EventViewer(Gtk.DrawingArea):
                     menuItem.connect("activate", callback)
 
 
-        self.highlightCursor = mouse.x
+        self.highlightCursor = press_x
         self.popupIsActive = True
 
         self.menu.show_all()
         self.menu.connect("selection-done",self.OnMenuDone)
         self.menu.popup(None, None, None, None, mouse.button, mouse.time)
 
-        self.mouseAnchor = [mouse.x, mouse.y]
+        self.mouseAnchor = [press_x, press_y]
 
     #_____________________________________________________________________
 
@@ -954,7 +966,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def OnMouseUp(self, widget, mouse):
+    def on_mouse_up(self, press_count, press_x, press_y, user_data):
         """
         Called when the left mouse button is released.
         Finishes drag, fade and selection operations.
@@ -963,19 +975,26 @@ class EventViewer(Gtk.DrawingArea):
             widget -- reserved for GTK callbacks, don't use it explicitly.
             mouse -- GTK mouse event that fired this method call.
         """
-        if mouse.button == 1:
-            if self.isDragging:
-                self.isDragging = False
-                if (self.eventStart != self.event.start):
-                    self.event.Move(self.event.start, self.eventStart)
-                    return False #need to pass this button release up to RecordingView
-            elif self.isDraggingFade:
-                self.isDraggingFade = False
+        # which button gets clicked - 1 is primary, 3 - secondary, 2 - middle scroll
+        button = self.mouse_controller.get_current_button()
+        # GDK control mask
+        state_mask = self.mouse_controller.get_current_event_state()
+
+        if button == 1:
+            # FIXME dragging support
+            # if self.isDragging:
+            #     self.isDragging = False
+            #     if (self.eventStart != self.event.start):
+            #         self.event.Move(self.event.start, self.eventStart)
+            #         return False #need to pass this button release up to RecordingView
+            # elif self.isDraggingFade:
+            #     self.isDraggingFade = False
                 # set the audioFadePoints appropriately
-                self.SetAudioFadePointsFromCurrentSelection()
-            elif self.isSelecting:
+            #     self.SetAudioFadePointsFromCurrentSelection()
+            if self.isSelecting:
                 self.isSelecting = False
-                self.ShowDrawer()
+                # FIXME wtf is drawer here?
+                #self.ShowDrawer()
 
     #_____________________________________________________________________
 
@@ -1006,7 +1025,7 @@ class EventViewer(Gtk.DrawingArea):
             mouse -- GTK mouse event that fired this method call.
         """
         if self.messageID:   #clear status bar if not already clear
-            self.mainview.ClearStatusBar(self.messageID)
+            self.application.ClearStatusBar(self.messageID)
             self.messageID = None
         self.highlightCursor = None
         self.queue_draw()
@@ -1182,7 +1201,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def OnEventSelected(self, event):
+    def on_event_selected(self, event):
         """
         Callback function for when the event is selected or de-selected.
         """
