@@ -533,6 +533,19 @@ class Instrument(GObject.GObject):
         # FIXME related to showing fill level to level
         # self.emit("level")
 
+    def set_selected(self, selected):
+        """
+        Sets the Instrument to be highlighted and receive keyboard actions.
+
+        Parameters:
+            sel --     True = the Instrument is currently selected.
+                    False = the Instrument is not currently selected.
+        """
+        # No need to emit signal when there is no change in selection state
+        if self.isSelected is not selected:
+            self.isSelected = selected
+            self.emit("selected")
+
     @staticmethod
     def getInstruments():
         app = Gio.Application.get_default()

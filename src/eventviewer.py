@@ -72,7 +72,7 @@ class EventViewer(Gtk.DrawingArea):
 
         # self.connect("focus-in-event", self.OnFocus)
         # self.connect("focus-out-event", self.OnFocusLost)
-        self.key_controller.connect("key-pressed", self.OnKeyPress)
+        self.key_controller.connect("key-pressed", self.on_key_press)
         self.key_controller.connect("key-released", self.OnKeyRelease)
         # we listen to all buttons
         self.mouse_controller.set_button(0)
@@ -80,6 +80,9 @@ class EventViewer(Gtk.DrawingArea):
         self.mouse_controller.connect("pressed", self.on_mouse_down)
         self.motion_controller.connect("motion", self.OnMouseMove)
         self.motion_controller.connect("leave", self.OnMouseLeave)
+
+        # init mouse anchor
+        self.mouseAnchor = [0, 0]
 
         self.event = event                # The event this widget is representing
         self.project = project            # A reference to the open project
@@ -167,6 +170,7 @@ class EventViewer(Gtk.DrawingArea):
 
         # Set out initial size
         self.UpdateSize()
+        self.set_can_focus(True)
 
     #_____________________________________________________________________
 
@@ -494,7 +498,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def OnMouseMove(self, x, y, user_data):
+    def OnMouseMove(self, controller, x, y):
         """
         Display a message in the StatusBar when the mouse hovers over the
         EventViewer.
@@ -534,30 +538,30 @@ class EventViewer(Gtk.DrawingArea):
             # while you're over a fadeMarker
         #     return True
 
-        # if self.isDragging:
-        #     ptr = Gdk.Display.get_default().get_pointer()
-        #     x = ptr[1]
-        #     y = ptr[2]
-        #     dx = float(x - self.mouseAnchor[0]) / self.project.viewScale
-        #     time = self.event.start + dx
-        #     time = max(0, time)
+        if self.isDragging:
+            # ptr = Gdk.Display.get_default().get_pointer()
+            # x = ptr[1]
+            # y = ptr[2]
+            dx = float(x - self.mouseAnchor[0]) / self.project.viewScale
+            time = self.event.start + dx
+            time = max(0, time)
 
-        #     if self.event.MayPlace(time):
-        #         self.event.start = time
-        #         self.lane.UpdatePosition(self)
-        #         self.mouseAnchor = [x, y]
-        #     else:
-        #         temp = self.event.start
-        #         self.event.MoveButDoNotOverlap(time)
-        #         self.lane.UpdatePosition(self)
+            if self.event.MayPlace(time):
+                self.event.start = time
+                self.lane.UpdatePosition(self)
+                self.mouseAnchor = [x, y]
+            else:
+                temp = self.event.start
+                self.event.MoveButDoNotOverlap(time)
+                self.lane.UpdatePosition(self)
 
-                #MoveButDoNotOverlap() moves the event out of sync with the mouse
-                #and the mouseAnchor must be updated manually.
-        #         delta = (self.event.start - temp) * self.project.viewScale
-        #         self.mouseAnchor[0] += int(delta)
+                # MoveButDoNotOverlap() moves the event out of sync with the mouse
+                # and the mouseAnchor must be updated manually.
+                delta = (self.event.start - temp) * self.project.viewScale
+                self.mouseAnchor[0] += int(delta)
 
 
-        #     self.highlightCursor = None
+            self.highlightCursor = None
         # elif self.isSelecting:
         #     x2 = max(0, min(self.get_allocated_width(), mouse.x))
         #     self.event.selection[1] = self.SecFromPixX(x2)
@@ -577,12 +581,12 @@ class EventViewer(Gtk.DrawingArea):
         # else:
         #     self.highlightCursor = mouse.x
 
-        # self.queue_draw()
+        self.queue_draw()
         return True
 
     #_____________________________________________________________________
 
-    def on_mouse_down(self, press_count, press_x, press_y, user_data):
+    def on_mouse_down(self, controller, press_count, press_x, press_y):
         """
         Called when the user pressed a mouse button.
         Possible click combinations to capture:
@@ -604,22 +608,24 @@ class EventViewer(Gtk.DrawingArea):
         """
 
         # which button gets clicked - 1 is primary, 3 - secondary, 2 - middle scroll
-        button = self.mouse_controller.get_current_button()
+        button = controller.get_current_button()
         # GDK control mask
-        state_mask = self.mouse_controller.get_current_event_state()
-
+        state_mask = controller.get_current_event_state()
+        print("Button " + str(button))
+        print("Clicks " + str(press_count))
         #Don't allow moving, etc while recording!
         if self.event.instrument.project.GetIsRecording():
             return True #don't let the instrument viewer handle this click
 
+        # FIXME this doesn't work for now, no key support'
         self.grab_focus()
 
         # {L|R}MB: deselect all events, select this event, begin moving the event
         # {L|R}MB+ctrl: select this event without deselecting other events
         # FIXME selections
-        if state_mask != 'GDK_CONTROL_MASK':
-             self.project.clear_event_selections()
-        #     self.project.SelectInstrument(None)
+        if state_mask != Gdk.ModifierType.CONTROL_MASK:
+            self.project.clear_event_selections()
+            self.project.select_instrument(None)
         self.event.set_selected(True)
 
         #Don't allow editing while playing back.
@@ -629,9 +635,10 @@ class EventViewer(Gtk.DrawingArea):
 
         # RMB: context menu
         # FIXME menu system is completely changed, overhaul
-        # if button == 3:
-        #     self.context_menu(press_x, press_y)
-        # elif button == 1:
+        if button == 3:
+            pass
+            #self.context_menu(press_x, press_y)
+        elif button == 1:
             # check to see if the user clicked on the cancel button
             # FIXME
             # if self.cancelButtonArea.x <= mouse.x <= self.cancelButtonArea.width+self.cancelButtonArea.x \
@@ -640,7 +647,8 @@ class EventViewer(Gtk.DrawingArea):
             #     self.OnDelete()
             #     return True
 
-        #     if state_mask == 'GDK_SHIFT_MASK':
+            if state_mask == 'GDK_SHIFT_MASK':
+                pass
                 # LMB+shift: remove any existing selection in this event, begin
                 #   selecting part of this event
         #         self.isSelecting = True
@@ -648,7 +656,7 @@ class EventViewer(Gtk.DrawingArea):
         #         self.fadeMarkers = [100,100]
         #         if not self.selmessageID:
         #             self.selmessageID = self.mainview.SetStatusBar(_("<b>Click</b> the buttons below the selection to do something to that portion of audio."))
-        #     else:
+            else:
                 # FIXME fade ops
                 # if self.fadeMarkersContext and self.fadeMarkersContext.in_fill(mouse.x, mouse.y):
                     # LMB over a fadeMarker: drag that marker
@@ -660,12 +668,13 @@ class EventViewer(Gtk.DrawingArea):
                 #         self.fadeBeingDragged = 0
                 #         return True
 
-        #         if press_count == 2:
+                if press_count >= 2:
+                    print("CUT CUT CUT CUT CUT")
                     # LMB double-click: split here
-        #             self.mouseAnchor[0] = press_x
-        #             if self.event.isLoading == False:
-        #                 self.OnSplit(None, press_x)
-        #             return True
+                    self.mouseAnchor[0] = press_x
+                    if self.event.isLoading == False:
+                        self.OnSplit(None, press_x)
+                    return True
 
                 # remove any existing selection in this event
         #         self.event.selection = [0,0]
@@ -677,11 +686,10 @@ class EventViewer(Gtk.DrawingArea):
         #             if self.selmessageID:   #clear status bar if not already clear
         #                 self.mainview.ClearStatusBar(self.selmessageID)
         #                 self.selmessageID = None
-        #         self.isDragging = True
+                self.isDragging = True
 
-        #         self.eventStart = self.event.start
-        #         ptr = Gdk.Display.get_default().get_pointer()
-        #         self.mouseAnchor = [ptr[1], ptr[2]]
+                self.eventStart = self.event.start
+                self.mouseAnchor = [press_x, press_y]
 
         return True
 
@@ -724,7 +732,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def OnKeyPress(self, widget, event):
+    def on_key_press(self, controller, keyval, keycode, state):
         """
             Handle manipulation of events via the keyboard.
 
@@ -736,7 +744,7 @@ class EventViewer(Gtk.DrawingArea):
                 True -- continue GTK signal propagation after processing the event.
                 False -- pass this event on to other handlers because we don't want it.
         """
-
+        print("Key is down, I repeat key is down")
         #Don't allow moving, etc while recording!
         if self.event.instrument.project.GetIsRecording():
             return False
@@ -773,7 +781,12 @@ class EventViewer(Gtk.DrawingArea):
                 self.fadeMarkers.reverse()
 
 
-        key = Gdk.keyval_name(event.keyval)
+        key = Gdk.keyval_name(keyval)
+
+        if key == "Delete":
+            # FIXME this was missing from old mission, possibly requiring explictly call it via context menu
+            # for testing convinience
+            print("hitting that delete buttonsz")
 
         if key == "Return":
             # Toggle if this event is selected or not
@@ -982,11 +995,11 @@ class EventViewer(Gtk.DrawingArea):
 
         if button == 1:
             # FIXME dragging support
-            # if self.isDragging:
-            #     self.isDragging = False
-            #     if (self.eventStart != self.event.start):
-            #         self.event.Move(self.event.start, self.eventStart)
-            #         return False #need to pass this button release up to RecordingView
+            if self.isDragging:
+                self.isDragging = False
+                if (self.eventStart != self.event.start):
+                    self.event.Move(self.event.start, self.eventStart)
+                    return False #need to pass this button release up to RecordingView
             # elif self.isDraggingFade:
             #     self.isDraggingFade = False
                 # set the audioFadePoints appropriately
@@ -1165,7 +1178,7 @@ class EventViewer(Gtk.DrawingArea):
         """
         Callback function for when the position of the event changes.
         """
-        self.SetAccessibleName()
+        #self.SetAccessibleName()
         self.lane.UpdatePosition(self)
 
     #_____________________________________________________________________
@@ -1452,3 +1465,4 @@ class EventViewer(Gtk.DrawingArea):
 
 
 #=========================================================================       
+

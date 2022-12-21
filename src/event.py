@@ -379,17 +379,17 @@ class Event(GObject.GObject):
             e = Event(self.instrument, self.file)
         e.name = self.name
 
-        dictLeft = {}
-        dictRight = {}
-        for key, value in self.__fadePointsDict.iteritems():
-            if key < split_point:
-                dictLeft[key] = value
-            if key > split_point:
-                dictRight[key - split_point] = value
+        # dictLeft = {}
+        # dictRight = {}
+        # for key, value in self.__fadePointsDict.iteritems():
+        #     if key < split_point:
+        #         dictLeft[key] = value
+        #     if key > split_point:
+        #         dictRight[key - split_point] = value
         #in case there is a fade passing through the split point, recreate half of it on either side
-        splitFadeLevel = self.GetFadeLevelAtPoint(split_point)
-        dictLeft[split_point] = splitFadeLevel
-        dictRight[0.0] = splitFadeLevel
+        # splitFadeLevel = self.GetFadeLevelAtPoint(split_point)
+        # dictLeft[split_point] = splitFadeLevel
+        # dictRight[0.0] = splitFadeLevel
 
         if cutRightSide:
             e.start = self.start + split_point
@@ -401,8 +401,8 @@ class Event(GObject.GObject):
             e.levels_list = self.levels_list.slice_by_endtime(millis)
             self.levels_list = self.levels_list.slice_by_endtime(0, millis)
 
-            self.__fadePointsDict = dictLeft
-            e.__fadePointsDict = dictRight
+            # self.__fadePointsDict = dictLeft
+            # e.__fadePointsDict = dictRight
         else:
             e.start = self.start
             e.offset = self.offset
@@ -416,11 +416,11 @@ class Event(GObject.GObject):
             e.levels_list = self.levels_list.slice_by_endtime(0, millis)
             self.levels_list = self.levels_list.slice_by_endtime(millis)
 
-            self.__fadePointsDict = dictRight
-            e.__fadePointsDict = dictLeft
+            # self.__fadePointsDict = dictRight
+            # e.__fadePointsDict = dictLeft
 
-        self.__UpdateAudioFadePoints()
-        e.__UpdateAudioFadePoints()
+        # self.__UpdateAudioFadePoints()
+        # e.__UpdateAudioFadePoints()
         e.SetProperties()
         self.instrument.events.append(e)
         self.SetProperties()

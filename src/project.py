@@ -811,6 +811,19 @@ class Project(GObject.GObject):
             for event in instr.events:
                 event.set_selected(False)
 
+    def select_instrument(self, instrument=None):
+        """
+        Selects an instrument and clears the selection of all other instruments.
+
+        Parameters:
+            instrument -- Instrument object corresponding to the selected instrument.
+        """
+        for instr in self.instruments:
+            if instr is not instrument:
+                instr.set_selected(False)
+            else:
+                instr.set_selected(True)
+
 class CreateProjectError(Exception):
     """
     This class will get created when creating a Project fails.

@@ -134,3 +134,16 @@ class EventLineViewer(Gtk.Box):
         prev_pos = self.project.transport.GetPreviousPixelPosition()
         new_pos = self.project.transport.GetPixelPosition()
         self.queue_draw()
+
+    def UpdatePosition(self, eventViewer):
+        """
+        Moves the given EventViewer widget to the appropriate position.
+
+        Parameters:
+            eventViewer -- the widget that has needs to be moved to a new position.
+        """
+        # FIXME get_children is not in general API and I don't see we need that check, as event viewer and lane is linked by code properly
+        #if eventViewer in self.fixed.get_children():
+        x = int(round((eventViewer.event.start - self.project.viewStart) * self.project.viewScale))
+        self.fixed.move(eventViewer, x, 0 )
+        self.queue_draw()
