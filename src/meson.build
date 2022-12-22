@@ -50,6 +50,7 @@ jokosher_sources = [
   'addinstrumentdialog.py',
   'mixerstrip.py',
   'volumecontrol.py',
+  'scale.py',
 ]
 
 install_data(jokosher_sources, install_dir: moduledir)

@@ -20,7 +20,7 @@ class EventLineViewer(Gtk.Box):
         # signals
         self.project.transport.connect("position", self.OnTransportPosition)
         # self.project.connect("view-start", self.OnProjectViewChange)
-        # self.project.connect("zoom", self.OnProjectViewChange)
+        self.project.connect("zoom", self.OnProjectViewChange)
         self.instrument.connect("event::removed", self.on_event_removed)
         self.instrument.connect("event::added", self.on_event_added)
 
@@ -42,9 +42,9 @@ class EventLineViewer(Gtk.Box):
         self.motion_controller = Gtk.EventControllerMotion()
         self.add_controller(self.motion_controller)
         self.mouse_controller.set_propagation_phase(Gtk.PropagationPhase.TARGET)
-        self.mouse_controller.connect("pressed", self.on_mouse_down)
-        self.motion_controller.connect("motion", self.on_mouse_move)
-        self.motion_controller.connect("leave", self.on_mouse_leave)
+        # self.mouse_controller.connect("pressed", self.on_mouse_down)
+        # self.motion_controller.connect("motion", self.on_mouse_move)
+        # self.motion_controller.connect("leave", self.on_mouse_leave)
 
         # FIXME add context menu for instrument event line viewer
 
@@ -147,3 +147,15 @@ class EventLineViewer(Gtk.Box):
         x = int(round((eventViewer.event.start - self.project.viewStart) * self.project.viewScale))
         self.fixed.move(eventViewer, x, 0 )
         self.queue_draw()
+
+    def OnProjectViewChange(self, project):
+        """
+        Callback function for when the project view changes,
+        and the "view-start" or the "zoom" signal is send, and we
+        need to update.
+
+        Parameters:
+            project -- The project instance that send the signal.
+        """
+        for event in self.eventViewerList:
+            self.UpdatePosition(event)

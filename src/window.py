@@ -25,6 +25,7 @@ from .instrumentviewer import InstrumentViewer
 from .platform_utils import PlatformUtils
 from .project import Project
 from .addinstrumentdialog import AddInstrumentDialog
+from .scale import Scale
 
 @Gtk.Template(resource_path='/org/gnome/Jokosher/window.ui')
 class JokosherWindow(Adw.ApplicationWindow):
@@ -60,6 +61,7 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.stop_button.connect("clicked", self.stop_button_cb)
         self.record_button.connect("toggled", self.record_button_cb)
         self.mixer_button.connect("toggled", self.mixer_button_cb)
+        self.scale_show_button.connect("toggled", self.scale_button_cb)
 
     def mixer_button_cb(self, button):
         if button.get_active():
@@ -85,6 +87,12 @@ class JokosherWindow(Adw.ApplicationWindow):
     def record_button_cb(self, button):
         print(button.get_active())
 
+    def scale_button_cb(self, button):
+        if button.get_active():
+            self.top_box.show()
+        else:
+            self.top_box.hide()
+
     def do_add_instrument(self, widget, _):
         add_instrument_dialog = AddInstrumentDialog(self.project, self)
         add_instrument_dialog.show()
@@ -100,6 +108,13 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.mixer_button.set_sensitive(True);
         self.scale_show_button.set_sensitive(True);
         self.project = Project.get_current_project()
+        self.top_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.general_box.append(self.top_box)
+        self.top_box.props.hexpand = True
+        self.scale = Scale()
+        self.top_box.append(self.scale)
+        self.scale.props.halign = Gtk.Align.CENTER
+        self.top_box.hide()
         self.workspace = Workspace()
         self.general_box.append(self.workspace)
 

@@ -824,6 +824,16 @@ class Project(GObject.GObject):
             else:
                 instr.set_selected(True)
 
+    def set_scale(self, scale):
+        """
+        Sets the scale of the Project view.
+
+        Parameters:
+            scale -- view scale in pixels per second.
+        """
+        self.viewScale = scale
+        self.emit("zoom")
+
 class CreateProjectError(Exception):
     """
     This class will get created when creating a Project fails.

@@ -171,6 +171,7 @@ class EventViewer(Gtk.DrawingArea):
         # Set out initial size
         self.UpdateSize()
         self.set_can_focus(True)
+        self.set_property("focusable", True)
 
     #_____________________________________________________________________
 
@@ -537,16 +538,29 @@ class EventViewer(Gtk.DrawingArea):
             # quit this function now, so the highlightCursor doesn't move
             # while you're over a fadeMarker
         #     return True
-
-        if self.isDragging:
+        # GDK control mask
+        #print(x, y)
+        state_mask = controller.get_current_event_state()
+        if self.isDragging and state_mask == Gdk.ModifierType.BUTTON1_MASK:
+            #print("Bust a move !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+            # print("MOVE " + str(self.event.start))
             # ptr = Gdk.Display.get_default().get_pointer()
             # x = ptr[1]
             # y = ptr[2]
+            #print("BIG BIG MOVE")
+            # print(self.mouseAnchor[0])
+            # print(x, y)
+            #print(self.event.start)
             dx = float(x - self.mouseAnchor[0]) / self.project.viewScale
+            print(dx)
             time = self.event.start + dx
             time = max(0, time)
 
             if self.event.MayPlace(time):
+                #print("MayPlace")
+                #print(self.mouseAnchor[0])
+                print(x)
+                #print(time)
                 self.event.start = time
                 self.lane.UpdatePosition(self)
                 self.mouseAnchor = [x, y]
@@ -581,6 +595,7 @@ class EventViewer(Gtk.DrawingArea):
         # else:
         #     self.highlightCursor = mouse.x
 
+        # print("MOVE OOPSIE " + str(self.event.start))
         self.queue_draw()
         return True
 
@@ -606,7 +621,7 @@ class EventViewer(Gtk.DrawingArea):
         Returns:
             True -- continue GTK signal propagation. *CHECK*
         """
-
+        print("********** Event start is " + str(self.event.start))
         # which button gets clicked - 1 is primary, 3 - secondary, 2 - middle scroll
         button = controller.get_current_button()
         # GDK control mask
@@ -618,7 +633,7 @@ class EventViewer(Gtk.DrawingArea):
             return True #don't let the instrument viewer handle this click
 
         # FIXME this doesn't work for now, no key support'
-        self.grab_focus()
+        #self.grab_focus()
 
         # {L|R}MB: deselect all events, select this event, begin moving the event
         # {L|R}MB+ctrl: select this event without deselecting other events
@@ -687,7 +702,6 @@ class EventViewer(Gtk.DrawingArea):
         #                 self.mainview.ClearStatusBar(self.selmessageID)
         #                 self.selmessageID = None
                 self.isDragging = True
-
                 self.eventStart = self.event.start
                 self.mouseAnchor = [press_x, press_y]
 
@@ -749,22 +763,25 @@ class EventViewer(Gtk.DrawingArea):
         if self.event.instrument.project.GetIsRecording():
             return False
 
+        # GDK control mask
+        state_mask = controller.get_current_event_state()
+
         modifier = 0.1 # Multiply movement by this amount (modified by ctrl key)
         moveCursor = False # Are we moving the highlight cursor or the event?
         moveLeftFade = False
         moveRightFade = False
         moveTo = None
 
-        if "GDK_SHIFT_MASK" in event.state.value_names:
+        if state_mask == Gdk.ModifierType.SHIFT_MASK:
             if self.event.selection != [0, 0]:
                 moveLeftFade = True
             moveCursor = True
             modifier = 0.5
-        if "GDK_CONTROL_MASK" in event.state.value_names:
+        if state_mask == Gdk.ModifierType.CONTROL_MASK:
             if self.event.selection != [0, 0]:
                 moveRightFade = True
             modifier *= 10
-        if "GDK_MOD1_MASK" in event.state.value_names:
+        if state_mask == Gdk.ModifierType.ALT_MASK:
             moveCursor = True
             modifier *= 10
             if not self.isSelecting:
@@ -962,7 +979,6 @@ class EventViewer(Gtk.DrawingArea):
         self.menu.connect("selection-done",self.OnMenuDone)
         self.menu.popup(None, None, None, None, mouse.button, mouse.time)
 
-        self.mouseAnchor = [press_x, press_y]
 
     #_____________________________________________________________________
 
@@ -992,12 +1008,14 @@ class EventViewer(Gtk.DrawingArea):
         button = self.mouse_controller.get_current_button()
         # GDK control mask
         state_mask = self.mouse_controller.get_current_event_state()
-
+        print("UP " + str(self.event.start))
         if button == 1:
             # FIXME dragging support
             if self.isDragging:
                 self.isDragging = False
                 if (self.eventStart != self.event.start):
+                    print("truly dragging")
+                    print(self.eventStart)
                     self.event.Move(self.event.start, self.eventStart)
                     return False #need to pass this button release up to RecordingView
             # elif self.isDraggingFade:
