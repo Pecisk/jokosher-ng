@@ -23,6 +23,8 @@ class RecordingView(Gtk.Frame):
         self.instrumentWindow.set_child(self.instrumentBox)
         #self.instrumentWindow.set_size_request(500, -1)
         self.general_box.append(self.instrumentWindow)
+        viewPort = self.instrumentWindow.get_child()
+        viewPort.set_property("scroll-to-focus", False)
         # FIXME remove when adding scaling support somewhere else
         # self.hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         # self.hb.set_spacing(6)

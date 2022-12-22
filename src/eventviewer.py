@@ -633,7 +633,7 @@ class EventViewer(Gtk.DrawingArea):
             return True #don't let the instrument viewer handle this click
 
         # FIXME this doesn't work for now, no key support'
-        #self.grab_focus()
+        self.grab_focus()
 
         # {L|R}MB: deselect all events, select this event, begin moving the event
         # {L|R}MB+ctrl: select this event without deselecting other events
