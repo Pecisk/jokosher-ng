@@ -9,6 +9,16 @@ class InstrumentInfoBox(Gtk.Box):
         self.instrument = instrument
         self.project = instrument.project
 
+        self.mouse_controller = Gtk.GestureClick.new()
+        self.add_controller(self.mouse_controller)
+
+        self.mouse_controller.connect("pressed", self.on_mouse_down)
+
+        # self.motion_controller = Gtk.EventControllerMotion()
+        # self.add_controller(self.motion_controller)
+
+        # self.motion_controller.connect("motion", self.on_mouse_move)
+
         # set box structure for information about instrument
         # instrument icon and name
         self.instrument_icon_and_name = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
@@ -25,6 +35,7 @@ class InstrumentInfoBox(Gtk.Box):
         self.instrument_buttons = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.record_button = Gtk.ToggleButton()
         self.record_button.set_property("icon-name", "media-record")
+        self.record_button.set_active(self.instrument.is_armed)
         self.instrument_buttons.append(self.record_button)
         self.record_button.connect("toggled", self.on_record_button_toggled)
         self.solo_button = Gtk.ToggleButton()
@@ -33,13 +44,29 @@ class InstrumentInfoBox(Gtk.Box):
         self.solo_button.connect("toggled", self.on_solo_button_toggled)
         self.append(self.instrument_buttons)
 
+        self.instrument.connect("selected", self.on_instrument_selected)
+
         self.set_margin_start(5)
         self.set_margin_end(5)
         self.set_margin_top(5)
         self.set_margin_bottom(5)
 
     def on_record_button_toggled(self, button):
-        pass
+        print("Instrument is armed")
+        self.instrument.toggle_armed()
+        return True
 
     def on_solo_button_toggled(self, button):
-        pass
+        return True
+
+    def on_instrument_selected(self, instrument):
+        print("Instrument Info Box gets callback on selection")
+        return True
+
+    def on_mouse_down(self, controller, press_count, press_x, press_y):
+        print("Instrument Info Box is selected")
+        return True
+
+    # def on_mouse_move(self, controller, x, y):
+    #     print(controller.is_pointer())
+    #     print(controller.contains_pointer())

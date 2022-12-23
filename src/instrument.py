@@ -38,7 +38,7 @@ class Instrument(GObject.GObject):
         self.pixbuf = pixbuf            # The icon pixbuf resource
         self.instrType = type        # The type of instrument
 
-        self.isArmed = False            # True if the instrument is armed for recording
+        self.is_armed = False            # True if the instrument is armed for recording
         self.isMuted = False            # True if the "mute" button is toggled on
         self.actuallyIsMuted = False    # True if the instrument is muted (silent)
         self.isSolo = False            # True if the instrument is solo'd (only instrument active)
@@ -431,7 +431,7 @@ class Instrument(GObject.GObject):
         parent.appendChild(ins)
         ins.setAttribute("id", str(self.id))
 
-        items = ["name", "isArmed",
+        items = ["name", "is_armed",
                 "isMuted", "isSolo", "input", "output", "volume",
                 "isSelected", "isVisible", "inTrack", "instrType", "pan"]
 
@@ -545,6 +545,13 @@ class Instrument(GObject.GObject):
         if self.isSelected is not selected:
             self.isSelected = selected
             self.emit("selected")
+
+    def toggle_armed(self):
+        """
+        Arms/Disarms the Instrument for recording.
+        """
+        self.is_armed = not self.is_armed
+        self.emit("arm")
 
     @staticmethod
     def getInstruments():

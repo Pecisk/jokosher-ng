@@ -52,7 +52,7 @@ class Project(GObject.GObject):
         self.deleteOnCloseAudioFiles = []    # WARNING: any paths in this list will be deleted on exit!
         self.clipboardList = []        #The list containing the events to cut/copy
         self.viewScale = 25.0        #View scale as pixels per second
-        self.viewStart= 0.0            #View offset in seconds
+        self.view_start = 0.0            #View offset in seconds
         self.soloInstrCount = 0        #number of solo instruments (to know if others must be muted)
         self.audioState = self.AUDIO_STOPPED    #which audio state we are currently in
         self.exportPending = False    # True if we are waiting to start an export
@@ -268,7 +268,7 @@ class Project(GObject.GObject):
         params = doc.createElement("Parameters")
         head.appendChild(params)
 
-        items = ["viewScale", "viewStart", "name", "name_is_unset", "author", "volume",
+        items = ["viewScale", "view_start", "name", "name_is_unset", "author", "volume",
                  "transportMode", "bpm", "meter_nom", "meter_denom", "projectfile"]
 
         Utils.store_parameters_to_xml(self, doc, params, items)
@@ -355,7 +355,7 @@ class Project(GObject.GObject):
         instr = Instrument(self, name, type, pixbuf)
         if len(self.instruments) == 0:
             #If this is the first instrument, arm it by default
-            instr.isArmed = True
+            instr.is_armed = True
 
         self.temp = instr.id
         self.instruments.append(instr)
@@ -833,6 +833,18 @@ class Project(GObject.GObject):
         """
         self.viewScale = scale
         self.emit("zoom")
+
+    def set_view_start(self, start):
+        """
+        Sets the time at which the Project view should start.
+
+        Parameters:
+            start -- start time for the view in seconds.
+        """
+        start = max(0, min(self.GetProjectLength(), start))
+        if self.view_start != start:
+            self.view_start = start
+            self.emit("view-start")
 
 class CreateProjectError(Exception):
     """

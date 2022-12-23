@@ -44,10 +44,12 @@ class TimeLine(Gtk.DrawingArea):
         # Listen for changes in the project and the TransportManager
         # self.project.transport.connect("transport-mode", self.OnTransportMode)
         # self.project.transport.connect("position", self.OnTransportPosition)
-        # self.project.connect("bpm", self.OnProjectTimelineChange)
-        # self.project.connect("time-signature", self.OnProjectTimelineChange)
-        # self.project.connect("view-start", self.OnProjectTimelineChange)
-        # self.project.connect("zoom", self.OnProjectTimelineChange)
+        print("PROJECT PROJECT IS ******************")
+        print(self.project)
+        self.project.connect("bpm", self.on_project_timeline_change)
+        self.project.connect("time-signature", self.on_project_timeline_change)
+        self.project.connect("view-start", self.on_project_timeline_change)
+        self.project.connect("zoom", self.on_project_timeline_change)
 
 
         self.buttonDown = False
@@ -73,7 +75,6 @@ class TimeLine(Gtk.DrawingArea):
         # self.connect("size_allocate", self.OnAllocate)
 
     def do_snapshot(self, snapshot):
-        print("******************************************************* Timeline")
         rect = Graphene.Rect()
         rect.init(0, 0, self.get_width(), self.get_height())
         self.OnDraw(snapshot.append_cairo(rect))
@@ -184,10 +185,10 @@ class TimeLine(Gtk.DrawingArea):
         print("Width IS " + str(self.get_allocation().width))
         if transport.mode == transport.MODE_BARS_BEATS:
             # Calculate our scroll offset
-            # viewStart is in seconds. Seconds/60 = minutes. Minutes * Beat/Minute = beats (not an integer here)
-            pos = (self.project.viewStart / 60.) * self.project.bpm
+            # view_start is in seconds. Seconds/60 = minutes. Minutes * Beat/Minute = beats (not an integer here)
+            pos = (self.project.view_start / 60.) * self.project.bpm
 
-            # floor to an integer. beat = the last beat before viewStart
+            # floor to an integer. beat = the last beat before view_start
             beat = int(pos)
 
             # offset = part of a beat that has past since the last beat (offset < 1)
@@ -202,7 +203,7 @@ class TimeLine(Gtk.DrawingArea):
                 # Add the length of one beat, in pixels
                 x += (self.project.viewScale * 60.) / self.project.bpm
 
-                # x is now at the pixel-position of the first beat after the viewStart
+                # x is now at the pixel-position of the first beat after the view_start
                 beat += 1
 
             spacing = (60. / self.project.bpm) * self.project.viewScale
@@ -249,19 +250,19 @@ class TimeLine(Gtk.DrawingArea):
         else:
             # Working in milliseconds here. Using seconds gives modulus problems because they're floats
             viewScale = self.project.viewScale / 1000.
-            viewStart = int(self.project.viewStart * 1000)
+            view_start = int(self.project.view_start * 1000)
             factor, displayMilliseconds = self.GetZoomFactor(viewScale)
 
             # Calculate our scroll offset
-            # sec : viewStart, truncated to 1000ms; the second that has past just before the beginning of our surface
-            msec = viewStart - (viewStart % 1000)
+            # sec : view_start, truncated to 1000ms; the second that has past just before the beginning of our surface
+            msec = view_start - (view_start % 1000)
 
             # sec : move to the last 'line' that wasn't drawn
             if (msec % factor) != 0:
                 msec -= (msec % factor)
 
             # offset: the amount of milliseconds since the last second before the timeline
-            offset = viewStart - msec
+            offset = view_start - msec
 
             if offset > 0: # x = 0. atm, it should stay that way if offset == 0.
                 # offset : milliseconds
@@ -320,7 +321,7 @@ class TimeLine(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def OnProjectTimelineChange(self, project):
+    def on_project_timeline_change(self, project):
         """
         Callback for signal when time signature, zoom level,
         bpm or view start of the project change. All of these things
@@ -361,8 +362,8 @@ class TimeLine(Gtk.DrawingArea):
 
         width_in_secs = self.get_allocated_width() / self.project.viewScale
         # The left and right sides of the viewable area
-        rightPos = self.project.viewStart + width_in_secs
-        leftPos = self.project.viewStart
+        rightPos = self.project.view_start + width_in_secs
+        leftPos = self.project.view_start
         currentPos = self.project.transport.GetPosition()
 
         # Check if the playhead was recently viewable (don't force it in view if it wasn't previously in view)
@@ -446,8 +447,8 @@ class TimeLine(Gtk.DrawingArea):
                 start_xpos = self.current_autoscroll_diff
                 playhead_xpos = start_xpos
 
-            start = self.project.viewStart + (start_xpos / self.project.viewScale)
-            playhead = self.project.viewStart + (playhead_xpos / self.project.viewScale)
+            start = self.project.view_start + (start_xpos / self.project.viewScale)
+            playhead = self.project.view_start + (playhead_xpos / self.project.viewScale)
 
             self.project.SetViewStart(start)
             self.project.transport.SeekTo(playhead)
@@ -482,7 +483,7 @@ class TimeLine(Gtk.DrawingArea):
         Parameters:
             xpos -- the time of the new project position.
         """
-        pos = self.project.viewStart + (xpos / self.project.viewScale)
+        pos = self.project.view_start + (xpos / self.project.viewScale)
         pos = max(0., pos)
         self.project.transport.SeekTo(pos)
         self.SetAccessibleName()

@@ -51,6 +51,7 @@ jokosher_sources = [
   'mixerstrip.py',
   'volumecontrol.py',
   'scale.py',
+  'jokosher.css',
 ]
 
 install_data(jokosher_sources, install_dir: moduledir)

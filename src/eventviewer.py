@@ -58,11 +58,6 @@ class EventViewer(Gtk.DrawingArea):
 
         Gtk.DrawingArea.__init__(self)
 
-        # self.set_events(Gdk.EventMask.POINTER_MOTION_MASK |
-        #                 Gdk.EventMask.BUTTON_RELEASE_MASK |
-        #                 Gdk.EventMask.BUTTON_PRESS_MASK |
-        #                 Gdk.EventMask.LEAVE_NOTIFY_MASK |
-        #                 Gdk.EventMask.KEY_PRESS_MASK)
         self.key_controller = Gtk.EventControllerKey.new()
         self.add_controller(self.key_controller)
         self.mouse_controller = Gtk.GestureClick.new()
@@ -78,8 +73,8 @@ class EventViewer(Gtk.DrawingArea):
         self.mouse_controller.set_button(0)
         self.mouse_controller.connect("released", self.on_mouse_up)
         self.mouse_controller.connect("pressed", self.on_mouse_down)
-        self.motion_controller.connect("motion", self.OnMouseMove)
-        self.motion_controller.connect("leave", self.OnMouseLeave)
+        self.motion_controller.connect("motion", self.on_mouse_move)
+        self.motion_controller.connect("leave", self.on_mouse_leave)
 
         # init mouse anchor
         self.mouseAnchor = [0, 0]
@@ -179,8 +174,6 @@ class EventViewer(Gtk.DrawingArea):
         rect = Graphene.Rect()
         rect.init(0, 0, self.get_width(), self.get_height())
         self.OnDraw(snapshot.append_cairo(rect))
-        #print("********* SNAPSHOT HAPPENS")
-        #super(Gtk.Widget, self).do_snapshot(snapshot)
 
     def OnDraw(self, cairo_ctx):
         """
@@ -499,7 +492,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def OnMouseMove(self, controller, x, y):
+    def on_mouse_move(self, controller, x, y):
         """
         Display a message in the StatusBar when the mouse hovers over the
         EventViewer.
@@ -512,6 +505,7 @@ class EventViewer(Gtk.DrawingArea):
         Returns:
             True -- stop GTK signal propagation.
         """
+        print("eventviewer move")
         # if self.get_window() is None or self.event.instrument.project.GetIsRecording():
         #     return True #don't let the intrument viewer handle it
         # display status bar message if has not already been displayed
@@ -597,6 +591,8 @@ class EventViewer(Gtk.DrawingArea):
 
         # print("MOVE OOPSIE " + str(self.event.start))
         self.queue_draw()
+        # claim sequence
+        #controller.set_state(Gtk.EventSequenceState.CLAIMED)
         return True
 
     #_____________________________________________________________________
@@ -705,6 +701,8 @@ class EventViewer(Gtk.DrawingArea):
                 self.eventStart = self.event.start
                 self.mouseAnchor = [press_x, press_y]
 
+        # claim sequence
+        controller.set_state(Gtk.EventSequenceState.CLAIMED)
         return True
 
     #_____________________________________________________________________
@@ -995,7 +993,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def on_mouse_up(self, press_count, press_x, press_y, user_data):
+    def on_mouse_up(self, controller, press_count, press_x, press_y):
         """
         Called when the left mouse button is released.
         Finishes drag, fade and selection operations.
@@ -1026,6 +1024,9 @@ class EventViewer(Gtk.DrawingArea):
                 self.isSelecting = False
                 # FIXME wtf is drawer here?
                 #self.ShowDrawer()
+        # claim sequence
+        controller.set_state(Gtk.EventSequenceState.CLAIMED)
+        return True
 
     #_____________________________________________________________________
 
@@ -1046,7 +1047,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def OnMouseLeave(self, user_data):
+    def on_mouse_leave(self, user_data):
         """
         Clears the StatusBar message when the mouse moves out of the
         EventLaneViewer area. It also disables cursors accordingly.
@@ -1055,11 +1056,15 @@ class EventViewer(Gtk.DrawingArea):
             widget -- reserved for GTK callbacks, don't use it explicitly.
             mouse -- GTK mouse event that fired this method call.
         """
+        print("eventviewer leave")
         if self.messageID:   #clear status bar if not already clear
             self.application.ClearStatusBar(self.messageID)
             self.messageID = None
         self.highlightCursor = None
         self.queue_draw()
+        #controller.set_state(Gtk.EventSequenceState.CLAIMED)
+        return True
+
 
     #_____________________________________________________________________
 
@@ -1378,7 +1383,7 @@ class EventViewer(Gtk.DrawingArea):
         if x0 < self.drawer.get_preferred_size()[0].width and x1< self.drawer.get_preferred_size()[0].height:
             self.drawerAlignToLeft = True
 
-        eventx = int((self.event.start - self.project.viewStart) * self.project.viewScale)
+        eventx = int((self.event.start - self.project.view_start) * self.project.viewScale)
         if self.drawerAlignToLeft:
             x = int(self.PixXFromSec(selection[0]))
         else:

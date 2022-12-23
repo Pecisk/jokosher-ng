@@ -25,7 +25,7 @@ import configparser
 gi.require_version('Gtk', '4.0')
 gi.require_version('Adw', '1')
 
-from gi.repository import Gtk, Gio, Adw, Gst, GObject, GdkPixbuf
+from gi.repository import Gtk, Gio, Adw, Gst, GObject, GdkPixbuf, Gdk
 from .window import JokosherWindow
 from .project import Project
 from .settings import Settings
@@ -72,6 +72,17 @@ class JokosherApplication(Adw.Application):
         Gst.debug_set_active(True)
         #Gst.debug_set_default_threshold(5)
         Gst.debug_set_threshold_from_string("nle*:3", False)
+
+        # Load all CSS bits
+        #css = "* { background-color: #f00; }"
+        #css_provider = Gtk.CssProvider()
+        #css_provider.load_from_data(css)
+        #file = Gio.File.new_for_path(os.path.dirname(__file__) + '/jokosher.css')
+        #css_provider.load_from_file(file)
+        #context = Gtk.StyleContext()
+        #screen = Gdk.Display.get_default()
+        #context.add_provider_for_display(screen, css_provider,
+        #                            Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION)
         win = self.props.active_window
         if not win:
             win = JokosherWindow(application=self)

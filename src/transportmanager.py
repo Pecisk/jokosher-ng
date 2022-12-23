@@ -223,7 +223,7 @@ class TransportManager(GObject.GObject):
             of the visible area (where the view is scrolled to).
         """
         if offset is None:
-            offset = self.project.viewStart
+            offset = self.project.view_start
 
         rel_pos = position - offset
         abs_pos = rel_pos * self.project.viewScale

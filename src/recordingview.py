@@ -25,6 +25,10 @@ class RecordingView(Gtk.Frame):
         self.general_box.append(self.instrumentWindow)
         viewPort = self.instrumentWindow.get_child()
         viewPort.set_property("scroll-to-focus", False)
+
+        # set project view start for various UI bits, but mostly timeline
+        self.instrumentWindow.get_hadjustment().connect("value-changed", self.on_instrument_window_scroll)
+
         # FIXME remove when adding scaling support somewhere else
         # self.hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         # self.hb.set_spacing(6)
@@ -64,3 +68,5 @@ class RecordingView(Gtk.Frame):
         instrumentViewer = InstrumentViewer(instrument)
         self.instrumentBox.append(instrumentViewer)
 
+    def on_instrument_window_scroll(self, adjustment):
+        self.project.set_view_start(adjustment.get_value())

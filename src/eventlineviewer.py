@@ -37,14 +37,17 @@ class EventLineViewer(Gtk.Box):
         #the list of all the EventViewer widgets
         self.eventViewerList = []
 
+        # capture those clicks
         self.mouse_controller = Gtk.GestureClick.new()
         self.add_controller(self.mouse_controller)
+        self.mouse_controller.connect("pressed", self.on_mouse_down)
+
+        # we need to apply motion controller directly to parent widget of EventViewer
+        # as we are using is_pointer() method
         self.motion_controller = Gtk.EventControllerMotion()
-        self.add_controller(self.motion_controller)
-        self.mouse_controller.set_propagation_phase(Gtk.PropagationPhase.TARGET)
-        # self.mouse_controller.connect("pressed", self.on_mouse_down)
-        # self.motion_controller.connect("motion", self.on_mouse_move)
-        # self.motion_controller.connect("leave", self.on_mouse_leave)
+        self.fixed.add_controller(self.motion_controller)
+        self.motion_controller.connect("motion", self.on_mouse_move)
+        self.motion_controller.connect("leave", self.on_mouse_leave)
 
         # FIXME add context menu for instrument event line viewer
 
@@ -60,7 +63,7 @@ class EventLineViewer(Gtk.Box):
             instrument -- the instrument instance that send the signal.
             event -- the event instance that was added.
         """
-        x = int(round((event.start - self.project.viewStart) * self.project.viewScale))
+        x = int(round((event.start - self.project.view_start) * self.project.viewScale))
         child = EventViewer(self, self.project, event, self.get_allocated_height())
         self.fixed.put(child, x, 0)
         child.show()
@@ -78,12 +81,12 @@ class EventLineViewer(Gtk.Box):
         self.OnDraw(snapshot.append_cairo(rect))
 
 
-    def on_mouse_down(self, press_count, press_x, press_y, user_data):
+    def on_mouse_down(self, controller, press_count, press_x, press_y):
         print("EventLineViewer on_mouse_down !!!!!!!!!!!!")
         # which button gets clicked - 1 is primary, 3 - secondary, 2 - middle scroll
-        button = self.mouse_controller.get_current_button()
+        button = controller.get_current_button()
         # GDK control mask
-        state_mask = self.mouse_controller.get_current_event_state()
+        state_mask = controller.get_current_event_state()
 
         # if state_mask == 'GDK_CONTROL_MASK':
         #     self.instrument.SetSelected(True)
@@ -91,13 +94,15 @@ class EventLineViewer(Gtk.Box):
         #     self.project.clear_event_selections()
         #     self.project.select_instrument(self.instrument)
 
+        controller.set_state(Gtk.EventSequenceState.CLAIMED)
         return True
 
-    def on_mouse_move(self, x, y, user_data):
-        pass
+    def on_mouse_move(self, controller, x, y):
+        if controller.is_pointer():
+            print("eventlineviewer move")
 
-    def on_mouse_leave(self, user_data):
-        pass
+    def on_mouse_leave(self, controller):
+        print("eventlineviewer leave")
 
     def OnDraw(self, cairo_ctx):
         """
@@ -144,7 +149,7 @@ class EventLineViewer(Gtk.Box):
         """
         # FIXME get_children is not in general API and I don't see we need that check, as event viewer and lane is linked by code properly
         #if eventViewer in self.fixed.get_children():
-        x = int(round((eventViewer.event.start - self.project.viewStart) * self.project.viewScale))
+        x = int(round((eventViewer.event.start - self.project.view_start) * self.project.viewScale))
         self.fixed.move(eventViewer, x, 0 )
         self.queue_draw()
 
