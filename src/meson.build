@@ -50,6 +50,8 @@ jokosher_sources = [
   'addinstrumentdialog.py',
   'mixerstrip.py',
   'volumecontrol.py',
+  'volumecontrolinstrument.py',
+  'volumecontrolmain.py',
   'scale.py',
   'audiobackend.py',
   'jokosher.css',

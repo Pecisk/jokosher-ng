@@ -177,7 +177,7 @@ class Instrument(GObject.GObject):
         """
         Updates the GStreamer volume element to reflect the mute status.
         """
-        self.checkActuallyIsMuted()
+        self.check_mute_status()
         if self.actuallyIsMuted:
             self.volumeElement.set_property("mute", True)
         else:
@@ -185,7 +185,7 @@ class Instrument(GObject.GObject):
 
         self.emit("mute")
 
-    def checkActuallyIsMuted(self):
+    def check_mute_status(self):
         """
         Determines if this Intrument should be muted, by taking into account
         if any other Intruments are muted.
@@ -630,6 +630,90 @@ class Instrument(GObject.GObject):
         event.generate_waveform()
         self.temp = event.id
         self.emit("recording-done")
+
+    def set_volume(self, volume):
+        """
+        Sets the volume of this Instrument.
+
+        Parameters:
+            volume -- new volume value in a [0,1] range.
+        """
+        if self.volume != volume:
+            self.volume = volume
+            self.UpdateVolume()
+            self.emit("volume")
+
+    def set_pan(self, pan_value):
+        pan_value = round(pan_value, 2)
+        pan_value = pan_value / 100
+        self.pan = pan_value
+        self.panElement.set_property("panorama", pan_value)
+
+    def toggle_mute(self):
+        """
+        Mutes/Unmutes the Instrument.
+
+        Parameters:
+            wasSolo --    True = the Instrument had solo mode enabled.
+                        False = the Instrument was not in solo mode.
+
+        Considerations:
+            The signal "mute" is not emitted here because it is emitted in
+            the OnMute() function.
+        """
+        self.isMuted = not self.isMuted
+        self.on_mute()
+        # self.temp = self.isSolo
+        # self.isMuted = not self.isMuted
+        # if self.isSolo and not wasSolo:
+        #     self.isSolo = False
+        #     self.project.soloInstrCount -= 1
+        #     self.project.OnAllInstrumentsMute()
+        # elif not self.isSolo and wasSolo:
+        #     self.isSolo = True
+        #     self.project.soloInstrCount += 1
+        #     self.project.OnAllInstrumentsMute()
+        # else:
+        #     self.OnMute()
+
+    def toggle_solo(self):
+        if self.isSolo:
+            self.isSolo = False
+            self.project.soloInstrCount -= 1
+        else:
+            self.isSolo = True
+            self.project.soloInstrCount += 1
+
+        self.project.on_all_instruments_mute()
+        self.emit("solo")
+
+    def on_mute(self):
+        """
+        Updates the GStreamer volume element to reflect the mute status.
+        """
+        self.check_mute_status()
+        if self.actuallyIsMuted:
+            self.volumeElement.set_property("mute", True)
+        else:
+            self.volumeElement.set_property("mute", False)
+
+        self.emit("mute")
+
+    #_____________________________________________________________________
+
+    def check_mute_status(self):
+        """
+        Determines if this Intrument should be muted, by taking into account
+        if any other Intruments are muted.
+        """
+        if self.isMuted:
+            self.actuallyIsMuted = True
+        elif self.isSolo:
+            self.actuallyIsMuted = False
+        elif self.project.soloInstrCount > 0:
+            self.actuallyIsMuted = True
+        else:
+            self.actuallyIsMuted = False
 
     @staticmethod
     def getInstruments():

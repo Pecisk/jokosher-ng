@@ -993,6 +993,25 @@ class Project(GObject.GObject):
         #start the pipeline!
         self.Play(newAudioState=self.AUDIO_RECORDING)
 
+    def set_volume(self, volume):
+        """
+        Sets the volume of an instrument.
+
+        Parameters:
+            volume - a value in the range [0,1]
+        """
+        self.volume = volume
+        for instr in self.instruments:
+            instr.UpdateVolume()
+        self.emit("volume")
+
+    def on_all_instruments_mute(self):
+        """
+        Mutes all Instruments in this Project.
+        """
+        for instr in self.instruments:
+            instr.on_mute()
+
 class CreateProjectError(Exception):
     """
     This class will get created when creating a Project fails.
