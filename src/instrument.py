@@ -6,6 +6,7 @@ from .platform_utils import PlatformUtils
 from .globals import Globals
 from urllib import parse
 from .utils import Utils
+from .settings import Settings
 
 class Instrument(GObject.GObject):
 
@@ -150,7 +151,7 @@ class Instrument(GObject.GObject):
         self.volumeFadeStartConvert.link(self.volumeFadeElement)
         self.volumeFadeElement.link(self.volumeFadeEndConvert)
 
-        self.AddAndLinkPlaybackbin()
+        self.add_and_link_playbackbin()
 
         self.composition.connect("pad-added", self.__PadAddedCb)
         self.composition.connect("pad-removed", self.__PadRemovedCb)
@@ -457,7 +458,7 @@ class Instrument(GObject.GObject):
         for ev in self.graveyard:
             ev.store_to_xml(doc, ins, graveyard=True)
 
-    def AddAndLinkPlaybackbin(self):
+    def add_and_link_playbackbin(self):
         """
         Creates a playback bin for this Instrument and adds it to the main
         playback pipeline. *CHECK*
@@ -552,6 +553,83 @@ class Instrument(GObject.GObject):
         """
         self.is_armed = not self.is_armed
         self.emit("arm")
+
+    def remove_and_unlink_playbackbin(self):
+        """
+        Removes this Instrumen's playback bin from the main playback pipeline. *CHECK*
+        """
+        #get reference to pad before removing self.playbackbin from project.playbackbin!
+        pad = self.playghostpad.get_peer()
+
+        if pad:
+            status, state, pending = self.playbackbin.get_state(0)
+            if state == Gst.State.PAUSED or state == Gst.State.PLAYING or \
+                    pending == Gst.State.PAUSED or pending == Gst.State.PLAYING:
+                self.playghostpad.set_blocked(True)
+            self.playbackbin.unlink(self.project.adder)
+            self.project.adder.release_request_pad(pad)
+            Globals.debug("unlinked instrument playbackbin from adder")
+
+        playbackbinElements = self.project.playbackbin.iterate_elements()
+        iteratorAnswer, playbackbinElement = playbackbinElements.next()
+        while(playbackbinElement != None):
+            if playbackbinElement == self.playbackbin:
+                self.project.playbackbin.remove(self.playbackbin)
+                Globals.debug("removed instrument playbackbin from project playbackbin")
+                return
+            iteratorAnswer, playbackbinElement = playbackbinElements.next()
+
+    def GetRecordingEvent(self):
+        """
+        Obtain an Event suitable for recording.
+        Returns:
+            an Event suitable for recording.
+        """
+        event = Event(self)
+        event.start = self.project.transport.GetPosition()
+        event.isRecording = True
+        # event.name = _("Recorded audio")
+        event.name = "Recorded audio"
+
+        ext = Settings.recording["file_extension"]
+        filename = "%s_%d.%s" % (Globals.FAT32SafeFilename(self.name), event.id, ext)
+        event.file = filename
+        event.levels_file = filename + Event.LEVELS_FILE_EXTENSION
+
+        # inc = IncrementalSave.NewEvent(self.id, filename, event.start, event.id, recording=True)
+        # self.project.SaveIncrementalAction(inc)
+
+        #must add it to the instrument's list so that an update of the event lane will not remove the widget
+        self.events.append(event)
+        self.emit("event::added", event)
+        return event
+
+    def FinalizeRecording(self, event):
+        """
+        Called when the recording of an Event has finished.
+
+        Parameters:
+             event -- Event object that has finished being recorded.
+        """
+        #create our undo action to make everything atomic
+        #undoAction = self.project.NewAtomicUndoAction()
+        #make sure the event will act mormally (like a loaded file) now
+        self.FinishRecordingEvent(event)
+        # remove all the events behind the recorded event (because we can't have overlapping events.
+        # self.RemoveEventsUnderEvent(event, undoAction)
+
+    def FinishRecordingEvent(self, event):
+        """
+        Called to log the adding of this event on the undo stack
+        and to properly load the file that has just been recorded.
+
+        Parameters:
+             event -- Event object that has finished being recorded.
+        """
+        event.isRecording = False
+        event.generate_waveform()
+        self.temp = event.id
+        self.emit("recording-done")
 
     @staticmethod
     def getInstruments():

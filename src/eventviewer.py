@@ -87,7 +87,7 @@ class EventViewer(Gtk.DrawingArea):
         self.isSelecting = False        # True if a selection is currently being set
         self.isDraggingFade = False        # True if the user is dragging a fade marker
         self.lane = lane                # The parent lane for this object
-        self.currentScale = 0            # Tracks if the project viewScale has changed
+        self.currentScale = 0            # Tracks if the project view_scale has changed
         self.redrawWaveform = False        # Force redraw the cached waveform on next expose event
         #boolean; if the drawer should be at the left of current selection
         #otherwise it will be put on the right
@@ -368,7 +368,7 @@ class EventViewer(Gtk.DrawingArea):
             length = len(levels)
 
             # time offset of the start of the drawing area in milliseconds
-            starting_time = int(rect.x / self.project.viewScale * 1000)
+            starting_time = int(rect.x / self.project.view_scale * 1000)
             starting_index = levels.find_endtime_index(starting_time)
 
             x = 0
@@ -376,7 +376,7 @@ class EventViewer(Gtk.DrawingArea):
             skip_list = []
             iterator = itertools.islice(levels, starting_index, length)
             for endtime, peak in iterator:
-                x = int((endtime - starting_time) * self.project.viewScale / 1000)
+                x = int((endtime - starting_time) * self.project.view_scale / 1000)
 
                 peakOnScreen = int(peak * rect.height / sys.maxsize)
                 skip_list.append(peakOnScreen)
@@ -545,7 +545,7 @@ class EventViewer(Gtk.DrawingArea):
             # print(self.mouseAnchor[0])
             # print(x, y)
             #print(self.event.start)
-            dx = float(x - self.mouseAnchor[0]) / self.project.viewScale
+            dx = float(x - self.mouseAnchor[0]) / self.project.view_scale
             print(dx)
             time = self.event.start + dx
             time = max(0, time)
@@ -565,7 +565,7 @@ class EventViewer(Gtk.DrawingArea):
 
                 # MoveButDoNotOverlap() moves the event out of sync with the mouse
                 # and the mouseAnchor must be updated manually.
-                delta = (self.event.start - temp) * self.project.viewScale
+                delta = (self.event.start - temp) * self.project.view_scale
                 self.mouseAnchor[0] += int(delta)
 
 
@@ -1086,7 +1086,7 @@ class EventViewer(Gtk.DrawingArea):
             if pos == 0.0:
                 return
             else:
-                pos /= float(self.project.viewScale)
+                pos /= float(self.project.view_scale)
                 self.event.SplitEvent(pos)
 
     #_____________________________________________________________________
@@ -1181,11 +1181,11 @@ class EventViewer(Gtk.DrawingArea):
         and length of the event.
         """
         if self.event.duration > 1:
-            width = self.event.duration * self.project.viewScale
+            width = self.event.duration * self.project.view_scale
         elif self.event.loadingLength > 0:
-            width = self.event.loadingLength * self.project.viewScale
+            width = self.event.loadingLength * self.project.view_scale
         else:
-            width = 1 * self.project.viewScale
+            width = 1 * self.project.view_scale
 
         # if not (self.small):
         height = 77
@@ -1272,10 +1272,10 @@ class EventViewer(Gtk.DrawingArea):
         Parameters:
             project -- The project instance that send the signal.
         """
-        if self.currentScale != self.project.viewScale:
+        if self.currentScale != self.project.view_scale:
             self.redrawWaveform = True
             self.queue_resize()
-            self.currentScale = self.project.viewScale
+            self.currentScale = self.project.view_scale
             self.queue_draw()
 
     #_____________________________________________________________________
@@ -1290,7 +1290,7 @@ class EventViewer(Gtk.DrawingArea):
         Returns:
             the correspondent pixel X position in the waveform.
         """
-        return round(float(sec) * self.project.viewScale)
+        return round(float(sec) * self.project.view_scale)
 
     #_____________________________________________________________________
 
@@ -1304,7 +1304,7 @@ class EventViewer(Gtk.DrawingArea):
         Returns:
             the correspondent value in seconds.
         """
-        return float(pixx) / self.project.viewScale
+        return float(pixx) / self.project.view_scale
 
     #_____________________________________________________________________
 
@@ -1377,13 +1377,13 @@ class EventViewer(Gtk.DrawingArea):
         else:
             selection = self.event.selection[:]
 
-        x0 = self.project.viewScale * self.event.selection[0]
-        x1 = (self.project.viewScale * self.event.selection[1]) - x0
+        x0 = self.project.view_scale * self.event.selection[0]
+        x1 = (self.project.view_scale * self.event.selection[1]) - x0
 
         if x0 < self.drawer.get_preferred_size()[0].width and x1< self.drawer.get_preferred_size()[0].height:
             self.drawerAlignToLeft = True
 
-        eventx = int((self.event.start - self.project.view_start) * self.project.viewScale)
+        eventx = int((self.event.start - self.project.view_start) * self.project.view_scale)
         if self.drawerAlignToLeft:
             x = int(self.PixXFromSec(selection[0]))
         else:

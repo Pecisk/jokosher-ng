@@ -73,7 +73,7 @@ class FormatOneZero:
 			instr = Instrument(self.project, None, None, None, id)
 			self.LoadInstrument(instr, instrElement)
 			self.project.graveyard.append(instr)
-			instr.RemoveAndUnlinkPlaybackbin()
+			instr.remove_and_unlink_playbackbin()
 
 	#_____________________________________________________________________
 

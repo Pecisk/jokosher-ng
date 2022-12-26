@@ -226,7 +226,7 @@ class TransportManager(GObject.GObject):
             offset = self.project.view_start
 
         rel_pos = position - offset
-        abs_pos = rel_pos * self.project.viewScale
+        abs_pos = rel_pos * self.project.view_scale
 
         return int(round(abs_pos))
 

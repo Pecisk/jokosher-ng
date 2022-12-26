@@ -14,6 +14,7 @@ from .platform_utils import PlatformUtils
 from .projectutilities import ProjectUtilities
 from .settings import Settings
 from .transportmanager import TransportManager
+from .audiobackend import AudioBackend
 
 class Project(GObject.GObject):
 
@@ -51,7 +52,7 @@ class Project(GObject.GObject):
         #also contains paths to levels_data files corresponding to those audio files
         self.deleteOnCloseAudioFiles = []    # WARNING: any paths in this list will be deleted on exit!
         self.clipboardList = []        #The list containing the events to cut/copy
-        self.viewScale = 25.0        #View scale as pixels per second
+        self.view_scale = 25.0        #View scale as pixels per second
         self.view_start = 0.0            #View offset in seconds
         self.soloInstrCount = 0        #number of solo instruments (to know if others must be muted)
         self.audioState = self.AUDIO_STOPPED    #which audio state we are currently in
@@ -268,7 +269,7 @@ class Project(GObject.GObject):
         params = doc.createElement("Parameters")
         head.appendChild(params)
 
-        items = ["viewScale", "view_start", "name", "name_is_unset", "author", "volume",
+        items = ["view_scale", "view_start", "name", "name_is_unset", "author", "volume",
                  "transportMode", "bpm", "meter_nom", "meter_denom", "projectfile"]
 
         Utils.store_parameters_to_xml(self, doc, params, items)
@@ -524,7 +525,7 @@ class Project(GObject.GObject):
             iteratorAnswer, sinkElement = sinkElements.next()
 
             if hasattr(sinkElement.props, "device"):
-                outdevice = Globals.settings.playback["device"]
+                outdevice = Settings.playback["device"]
                 Globals.debug("Output device: %s" % outdevice)
                 sinkElement.set_property("device", outdevice)
 
@@ -680,7 +681,7 @@ class Project(GObject.GObject):
                 pass #Already removed from another instrument
             Globals.debug("set state to NULL")
             bin.set_state(Gst.State.NULL)
-            instr.AddAndLinkPlaybackbin()
+            instr.add_and_link_playbackbin()
 
         self.recordingEvents = {}
 
@@ -831,7 +832,7 @@ class Project(GObject.GObject):
         Parameters:
             scale -- view scale in pixels per second.
         """
-        self.viewScale = scale
+        self.view_scale = scale
         self.emit("zoom")
 
     def set_view_start(self, start):
@@ -845,6 +846,152 @@ class Project(GObject.GObject):
         if self.view_start != start:
             self.view_start = start
             self.emit("view-start")
+
+    def Record(self):
+        """
+        Start recording all selected instruments.
+        """
+
+        Globals.debug("pre-record state:", self.mainpipeline.get_state(0)[1].value_name)
+
+        #Add all instruments to the pipeline
+        self.recordingEvents = {}
+        devices = {}
+        capture_devices = AudioBackend.ListCaptureDevices(probe_name=False)
+        if not capture_devices:
+            capture_devices = ((None,None),)
+
+        default_device = capture_devices[0][0]
+
+        for device, deviceName in capture_devices:
+            devices[device] = []
+            for instr in self.instruments:
+                if instr.is_armed and (instr.input == device or device is None):
+                    instr.remove_and_unlink_playbackbin()
+                    devices[device].append(instr)
+                elif instr.is_armed and instr.input is None:
+                    instr.remove_and_unlink_playbackbin()
+                    devices[default_device].append(instr)
+
+
+        recbin = 0
+        for device, recInstruments in devices.items():
+            if len(recInstruments) == 0:
+                #Nothing to record on this device
+                continue
+
+            if device is None:
+                # assume we are using a backend like JACK which does not allow
+                #us to do device selection.
+                channelsNeeded = len(recInstruments)
+            else:
+                channelsNeeded = AudioBackend.GetChannelsOffered(device)
+
+
+            if channelsNeeded > 1: #We're recording from a multi-input device
+                #Need multiple recording bins with unique names when we're
+                #recording from multiple devices
+                recordingbin = Gst.Bin("recordingbin_%d" % recbin)
+                recordString = Settings.recording["audiosrc"]
+                srcBin = Gst.parse_bin_from_description(recordString, True)
+                try:
+                    src_element = srcBin.iterate_sources().next()
+                except StopIteration:
+                    pass
+                else:
+                    if hasattr(src_element.props, "device"):
+                        src_element.set_property("device", device)
+
+                caps = Gst.caps_from_string("audio/x-raw")
+
+                sampleRate = Settings.recording["samplerate"]
+                try:
+                    sampleRate = int(sampleRate)
+                except ValueError:
+                    sampleRate = 0
+                # 0 means for "autodetect", or more technically "don't use any rate caps".
+                if sampleRate > 0:
+                    for struct in caps:
+                        struct.set_value("rate", sampleRate)
+
+                for struct in caps:
+                    struct.set_value("channels", channelsNeeded)
+
+                Globals.debug("recording with capsfilter:", caps.to_string())
+                capsfilter = Gst.element_factory_make("capsfilter")
+                capsfilter.set_property("caps", caps)
+
+                split = Gst.element_factory_make("deinterleave")
+                convert = Gst.element_factory_make("audioconvert")
+
+                recordingbin.add(srcBin, split, convert, capsfilter)
+
+                srcBin.link(convert)
+                convert.link(capsfilter)
+                capsfilter.link(split)
+
+                split.connect("pad-added", self.__RecordingPadAddedCb, recInstruments, recordingbin)
+                Globals.debug("Recording in multi-input mode")
+                Globals.debug("adding recordingbin_%d" % recbin)
+                self.mainpipeline.add(recordingbin)
+                recbin += 1
+            else:
+                instr = recInstruments[0]
+                event = instr.GetRecordingEvent()
+
+                encodeString = Settings.recording["fileformat"]
+                recordString = Settings.recording["audiosrc"]
+
+                # 0 means this encoder doesn't take a bitrate
+                if Settings.recording["bitrate"] > 0:
+                    encodeString %= {'bitrate' : int(Settings.recording["bitrate"])}
+
+                sampleRate = 0
+                try:
+                    sampleRate = int(Settings.recording["samplerate"] )
+                except ValueError:
+                    pass
+                # 0 means "autodetect", or more technically "don't use any caps".
+                if sampleRate > 0:
+                    capsString = "audio/x-raw,format=S32LE,rate=%s ! audioconvert" % sampleRate
+                else:
+                    capsString = "audioconvert"
+
+                # TODO: get rid of this entire string; do it manually
+                pipe = "%s ! %s ! level name=recordlevel ! audioconvert ! %s ! filesink name=sink"
+                pipe %= (recordString, capsString, encodeString)
+
+                Globals.debug("Using pipeline: %s" % pipe)
+
+                recordingbin = Gst.parse_bin_from_description(pipe, False)
+
+                filesink = recordingbin.get_by_name("sink")
+                level = recordingbin.get_by_name("recordlevel")
+
+                filesink.set_property("location", event.GetAbsFile())
+                level.set_property("interval", int(event.LEVEL_INTERVAL * Gst.SECOND))
+
+                #update the levels in real time
+                handle = self.bus.connect("message::element", event.recording_bus_level)
+
+                try:
+                    src_element = recordingbin.iterate_sources().next().elem
+                except StopIteration:
+                    pass
+                else:
+                    if hasattr(src_element.props, "device"):
+                        src_element.set_property("device", device)
+
+                self.recordingEvents[instr] = (event, recordingbin, handle)
+
+                Globals.debug("Recording in single-input mode")
+                Globals.debug("Using input track: %s" % instr.inTrack)
+
+                Globals.debug("adding recordingbin")
+                self.mainpipeline.add(recordingbin)
+
+        #start the pipeline!
+        self.Play(newAudioState=self.AUDIO_RECORDING)
 
 class CreateProjectError(Exception):
     """

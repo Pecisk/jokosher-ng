@@ -10,7 +10,7 @@ class Scale(Gtk.Box):
         self.zoomSlider.set_range(5.0, 100.0)
         self.zoomSlider.set_increments(0.2, 0.2)
         self.zoomSlider.set_draw_value(False)
-        self.zoomSlider.set_value(self.project.viewScale)
+        self.zoomSlider.set_value(self.project.view_scale)
         self.append(self.zoomSlider)
 
         self.zoomSlider.connect("change-value", self.on_scrolling_scale)

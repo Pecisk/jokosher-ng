@@ -63,7 +63,7 @@ class EventLineViewer(Gtk.Box):
             instrument -- the instrument instance that send the signal.
             event -- the event instance that was added.
         """
-        x = int(round((event.start - self.project.view_start) * self.project.viewScale))
+        x = int(round((event.start - self.project.view_start) * self.project.view_scale))
         child = EventViewer(self, self.project, event, self.get_allocated_height())
         self.fixed.put(child, x, 0)
         child.show()
@@ -149,7 +149,7 @@ class EventLineViewer(Gtk.Box):
         """
         # FIXME get_children is not in general API and I don't see we need that check, as event viewer and lane is linked by code properly
         #if eventViewer in self.fixed.get_children():
-        x = int(round((eventViewer.event.start - self.project.view_start) * self.project.viewScale))
+        x = int(round((eventViewer.event.start - self.project.view_start) * self.project.view_scale))
         self.fixed.move(eventViewer, x, 0 )
         self.queue_draw()
 

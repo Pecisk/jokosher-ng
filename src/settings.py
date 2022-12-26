@@ -41,7 +41,8 @@ class Settings:
                 "fileformat": "flacenc",
                 "file_extension": "flac",
                 "samplerate": "0", # zero means, autodetect sample rate (ie use any available)
-                "audiosrc" : "gconfaudiosrc",
+                "bitrate": 0, # zero means bitrate is not provided and have to be detected automatically
+                "audiosrc" : "pulsesrc",
                 "device" : "default"
                 }
     # Overwrite with platform specific settings

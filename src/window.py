@@ -70,14 +70,16 @@ class JokosherWindow(Adw.ApplicationWindow):
             self.workspace.mixer_strip.hide()
 
     def play_button_cb(self, button):
-        if button.get_active():
+        if button.get_active() and self.record_button.get_active():
+            self.app.on_record()
+        elif button.get_active():
             self.app.on_play()
         else:
             self.app.on_stop()
 
     def stop_button_cb(self, button):
         if self.play_button.get_active():
-            # stop playing
+            # stop playing and/or recording
             self.play_button.set_active(False)
             self.app.on_stop()
         if self.record_button.get_active():
@@ -85,7 +87,8 @@ class JokosherWindow(Adw.ApplicationWindow):
             self.record_button.set_active(False)
 
     def record_button_cb(self, button):
-        print(button.get_active())
+        if button.get_active():
+            pass
 
     def scale_button_cb(self, button):
         if button.get_active():

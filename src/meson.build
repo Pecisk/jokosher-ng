@@ -51,6 +51,7 @@ jokosher_sources = [
   'mixerstrip.py',
   'volumecontrol.py',
   'scale.py',
+  'audiobackend.py',
   'jokosher.css',
 ]
 

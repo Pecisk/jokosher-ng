@@ -884,7 +884,7 @@ class Event(GObject.GObject):
         if not self.isRecording:
             return False
 
-        st = message.structure
+        st = message.get_structure()
         if st and message.src.get_name() == "recordlevel":
             self.__AppendLevelToList(st)
 

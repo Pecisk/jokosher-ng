@@ -29,6 +29,7 @@ from gi.repository import Gtk, Gio, Adw, Gst, GObject, GdkPixbuf, Gdk
 from .window import JokosherWindow
 from .project import Project
 from .settings import Settings
+from .globals import Globals
 
 class JokosherApplication(Adw.Application):
     """The main application singleton class."""
@@ -49,7 +50,7 @@ class JokosherApplication(Adw.Application):
         # setup global variables
         self.settings = Settings()
 
-        # some project states
+        # some app states
         self.isRecording = False
         self.isPlaying = False
         self.isPaused = False
@@ -319,7 +320,70 @@ class JokosherApplication(Adw.Application):
 
     def on_stop(self):
         self.isPlaying = False
+        self.isRecording = False
         self.project.Stop()
+
+    def on_record(self, widget=None):
+        """
+        Toggles recording. If there's an error, a warning/error message is
+        issued to the user.
+
+        Parameters:
+            widget -- reserved for GTK callbacks, don't use it explicitly.
+        """
+        # toggling the record button invokes this function so we use the settingButtons var to
+        # indicate that we're just changing the GUI state and dont need to do anything code-wise
+        # if self.settingButtons:
+        #     return
+
+        # if self.isRecording:
+        #     self.project.Stop()
+        #     return
+
+        can_record = False
+        for i in self.project.instruments:
+            if i.is_armed:
+                can_record = True
+
+        #Check to see if any instruments are trying to use the same input channel
+        usedChannels = []
+        armed_instrs = [x for x in self.project.instruments if x.is_armed]
+        for instrA in armed_instrs:
+            for instrB in armed_instrs:
+                if instrA is not instrB and instrA.input == instrB.input and instrA.inTrack == instrB.inTrack:
+                    string = _("The instruments '%(name1)s' and '%(name2)s' both have the same input selected. Please either disarm one, or connect it to a different input through 'Project -> Recording Inputs'")
+                    message = string % {"name1" : instrA.name, "name2" : instrB.name}
+                    dlg = Gtk.MessageDialog(self.window,
+                        Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                        Gtk.MessageType.INFO,
+                        Gtk.ButtonsType.CLOSE,
+                        message)
+                    dlg.connect('response', lambda dlg, response: dlg.destroy())
+                    dlg.run()
+                    self.settingButtons = True
+                    widget.set_active(False)
+                    self.settingButtons = False
+                    return
+
+        if not can_record:
+            Globals.debug("can not record")
+            if self.project.instruments:
+                errmsg = "No instruments are armed for recording. You need to arm an instrument before you can begin recording."
+            else:
+                errmsg = "No instruments have been added. You must add an instrument before recording"
+            dlg = Gtk.MessageDialog(self.window,
+                Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                Gtk.MessageType.INFO,
+                Gtk.ButtonsType.CLOSE,
+                _(errmsg))
+            dlg.connect('response', lambda dlg, response: dlg.destroy())
+            dlg.run()
+            self.settingButtons = True
+            widget.set_active(False)
+            self.settingButtons = False
+        else:
+            Globals.debug("can record")
+            self.project.Record()
 
 
 def main(version):

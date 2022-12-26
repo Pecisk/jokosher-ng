@@ -11,7 +11,7 @@ class TimeLine(Gtk.DrawingArea):
     or bars and beats (MODE_BARS_BEATS). These modes are set in project.transport.
 
     When the time line is constructed in MODE_HOURS_MINS_SECS, it dynamically adjusts
-    its scale to the project.viewScale. MODE_BARS_BEATS does not support this (yet).
+    its scale to the project.view_scale. MODE_BARS_BEATS does not support this (yet).
     """
 
     """ GTK widget name """
@@ -197,16 +197,16 @@ class TimeLine(Gtk.DrawingArea):
             if offset > 0.:
                 # beats * ( pixels/minute ) / ( beats/minute ) = pixels
                 # Set x to the position in pixels of the last beat
-                x -= offset * ((self.project.viewScale * 60.) / self.project.bpm)
+                x -= offset * ((self.project.view_scale * 60.) / self.project.bpm)
 
                 # (pixels/minute) / (beats/minute) * 1 beat = pixels
                 # Add the length of one beat, in pixels
-                x += (self.project.viewScale * 60.) / self.project.bpm
+                x += (self.project.view_scale * 60.) / self.project.bpm
 
                 # x is now at the pixel-position of the first beat after the view_start
                 beat += 1
 
-            spacing = (60. / self.project.bpm) * self.project.viewScale
+            spacing = (60. / self.project.bpm) * self.project.view_scale
 
             if self.project.meter_denom == 8 and (self.project.meter_nom % 3) == 0 and self.project.meter_nom != 3:
                 # Compound time signature, so beats are really 1 dotted note (3 1/8 notes)
@@ -249,9 +249,9 @@ class TimeLine(Gtk.DrawingArea):
                 x += spacing
         else:
             # Working in milliseconds here. Using seconds gives modulus problems because they're floats
-            viewScale = self.project.viewScale / 1000.
+            view_scale = self.project.view_scale / 1000.
             view_start = int(self.project.view_start * 1000)
-            factor, displayMilliseconds = self.GetZoomFactor(viewScale)
+            factor, displayMilliseconds = self.GetZoomFactor(view_scale)
 
             # Calculate our scroll offset
             # sec : view_start, truncated to 1000ms; the second that has past just before the beginning of our surface
@@ -266,10 +266,10 @@ class TimeLine(Gtk.DrawingArea):
 
             if offset > 0: # x = 0. atm, it should stay that way if offset == 0.
                 # offset : milliseconds
-                # viewScale : pixels / milliseconds
-                # offset * viewScale : offset in pixels
-                x -= offset * viewScale # return to the last 'active' second
-                x += viewScale * factor # positions the cursor at the first second to be drawn
+                # view_scale : pixels / milliseconds
+                # offset * view_scale : offset in pixels
+                x -= offset * view_scale # return to the last 'active' second
+                x += view_scale * factor # positions the cursor at the first second to be drawn
                 msec += factor # cursor is at the first line to be drawn now
 
             # Draw ticks up to the end of our display
@@ -299,7 +299,7 @@ class TimeLine(Gtk.DrawingArea):
                 context.stroke()
 
                 msec += factor
-                x += viewScale * factor
+                x += view_scale * factor
 
         #set area to record where the cached surface goes
         self.cachedDrawArea = rect
@@ -360,7 +360,7 @@ class TimeLine(Gtk.DrawingArea):
         if self.get_window() is None:
             return
 
-        width_in_secs = self.get_allocated_width() / self.project.viewScale
+        width_in_secs = self.get_allocated_width() / self.project.view_scale
         # The left and right sides of the viewable area
         rightPos = self.project.view_start + width_in_secs
         leftPos = self.project.view_start
@@ -447,8 +447,8 @@ class TimeLine(Gtk.DrawingArea):
                 start_xpos = self.current_autoscroll_diff
                 playhead_xpos = start_xpos
 
-            start = self.project.view_start + (start_xpos / self.project.viewScale)
-            playhead = self.project.view_start + (playhead_xpos / self.project.viewScale)
+            start = self.project.view_start + (start_xpos / self.project.view_scale)
+            playhead = self.project.view_start + (playhead_xpos / self.project.view_scale)
 
             self.project.SetViewStart(start)
             self.project.transport.SeekTo(playhead)
@@ -483,28 +483,28 @@ class TimeLine(Gtk.DrawingArea):
         Parameters:
             xpos -- the time of the new project position.
         """
-        pos = self.project.view_start + (xpos / self.project.viewScale)
+        pos = self.project.view_start + (xpos / self.project.view_scale)
         pos = max(0., pos)
         self.project.transport.SeekTo(pos)
         self.SetAccessibleName()
 
     #_____________________________________________________________________
 
-    def GetZoomFactor(self, viewScale):
+    def GetZoomFactor(self, view_scale):
         """
         To be used for drawing the MODE_HOURS_MINS_SECS timeline.
 
         Parameters:
-            viewScale -- the view scale in pixels per second.
+            view_scale -- the view scale in pixels per second.
 
         Returns:
-            - an integer factor to be multiplied with the viewScale to zoom the timeline in/out
+            - an integer factor to be multiplied with the view_scale to zoom the timeline in/out
             - a boolean indicating if milliseconds should be displayed
             The default factor is 1000, meaning that the distance between the short lines of the timeline
             symbolizes 1000 milliseconds. The code will increase of decrease this factor to keep the
             timeline readable. The factors can be set with the zoomLevels array. This array
             contains zoom levels that support precision from 20 ms to 1 minute. More extreme zoom
-            levels could be added, but will never be reached because the viewScale is limited.
+            levels could be added, but will never be reached because the view_scale is limited.
         """
         shortTextWidth = 28 # for '0:00' notation
         longTextWidth = 56 # for '0:00:000' notation
@@ -512,12 +512,12 @@ class TimeLine(Gtk.DrawingArea):
         whiteSpace = 50
         factor = 1000 # Default factor is 1 second for 1 line
         zoomLevels = [20, 100, 200, 1000, 4000, 12000, 60000]
-        if (textWidth + whiteSpace) > (self._NUM_LINES * factor * viewScale):
+        if (textWidth + whiteSpace) > (self._NUM_LINES * factor * view_scale):
             factor = zoomLevels[zoomLevels.index(factor) + 1]
-            while (textWidth + whiteSpace) > (self._NUM_LINES * factor * viewScale) and factor != zoomLevels[-1]:
+            while (textWidth + whiteSpace) > (self._NUM_LINES * factor * view_scale) and factor != zoomLevels[-1]:
                 factor = zoomLevels[zoomLevels.index(factor) + 1]
         else:
-            while (textWidth + whiteSpace) < (factor * viewScale) and factor != zoomLevels[0]:
+            while (textWidth + whiteSpace) < (factor * view_scale) and factor != zoomLevels[0]:
                 factor = zoomLevels[zoomLevels.index(factor) - 1]
                 if factor == 200:
                     textWidth = longTextWidth
