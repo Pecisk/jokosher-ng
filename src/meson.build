@@ -35,7 +35,7 @@ jokosher_sources = [
   'timeline.py',
   'instrument.py',
   'instrumentviewer.py',
-  'eventlineviewer.py',
+  'eventlaneviewer.py',
   'eventviewer.py',
   'event.py',
   'project.py',

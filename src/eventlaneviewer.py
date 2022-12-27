@@ -3,7 +3,7 @@ from .eventviewer import EventViewer
 from .project import Project
 import cairo
 
-class EventLineViewer(Gtk.Box):
+class EventLaneViewer(Gtk.Box):
     def __init__(self, instrument, instrument_viewer):
         Gtk.Box.__init__(self)
         self.instrument = instrument
@@ -82,7 +82,7 @@ class EventLineViewer(Gtk.Box):
 
 
     def on_mouse_down(self, controller, press_count, press_x, press_y):
-        print("EventLineViewer on_mouse_down !!!!!!!!!!!!")
+        print("EventLaneViewer on_mouse_down !!!!!!!!!!!!")
         # which button gets clicked - 1 is primary, 3 - secondary, 2 - middle scroll
         button = controller.get_current_button()
         # GDK control mask
