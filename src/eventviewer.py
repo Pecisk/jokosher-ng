@@ -272,46 +272,47 @@ class EventViewer(Gtk.DrawingArea):
             context.fill()
 
             #subtract fade marker height so that it is not drawn partially offscreen
-        #     padded_height = self.get_allocated_height() - self._PIXY_FADEMARKER_HEIGHT
+            padded_height = self.get_allocated_height() - self._PIXY_FADEMARKER_HEIGHT
 
             # and overlay the fademarkers
-        #     context.set_source_rgba(*self._FADEMARKERS_RGBA)
+            context.set_source_rgba(*self._FADEMARKERS_RGBA)
 
-        #     pixxFM_left = x1 + 1
+            pixxFM_left = x1 + 1
 
             #if there is enough room on the left of the selection,
             #place the fademarker outside the selection bounds.
-        #     if x1 + 1 >= self._PIXX_FADEMARKER_WIDTH:
-        #         pixxFM_left -= self._PIXX_FADEMARKER_WIDTH
-        #     pixyFM_left = int(padded_height * (100-self.fadeMarkers[0]) / 100.0)
-        #     context.rectangle(pixxFM_left, pixyFM_left,
-        #                       self._PIXX_FADEMARKER_WIDTH , self._PIXY_FADEMARKER_HEIGHT)
+            if x1 + 1 >= self._PIXX_FADEMARKER_WIDTH:
+                pixxFM_left -= self._PIXX_FADEMARKER_WIDTH
+            pixyFM_left = int(padded_height * (100-self.fadeMarkers[0]) / 100.0)
+            context.rectangle(pixxFM_left, pixyFM_left,
+                              self._PIXX_FADEMARKER_WIDTH , self._PIXY_FADEMARKER_HEIGHT)
 
-        #     pixxFM_right = x2
+            pixxFM_right = x2
 
             #if there is enough room on the right of the selection,
             #place the fademarker outside the selection bounds.
-        #     if x2 + self._PIXX_FADEMARKER_WIDTH > area.width:
-        #         pixxFM_right -= self._PIXX_FADEMARKER_WIDTH
-        #     pixyFM_right = int(padded_height * (100-self.fadeMarkers[1]) / 100.0)
-        #     context.rectangle(pixxFM_right, pixyFM_right,
-        #                       self._PIXX_FADEMARKER_WIDTH, self._PIXY_FADEMARKER_HEIGHT)
 
-        #     context.fill()
+            if x2 + self._PIXX_FADEMARKER_WIDTH > area.width:
+                pixxFM_right -= self._PIXX_FADEMARKER_WIDTH
+            pixyFM_right = int(padded_height * (100-self.fadeMarkers[1]) / 100.0)
+            context.rectangle(pixxFM_right, pixyFM_right,
+                              self._PIXX_FADEMARKER_WIDTH, self._PIXY_FADEMARKER_HEIGHT)
 
-        #     context.set_source_rgba(1,1,1,1)
-        #     context.move_to(pixxFM_left + 1, pixyFM_left + self._PIXY_FADEMARKER_HEIGHT - 1)
-        #     context.show_text("%s%%" % int(self.fadeMarkers[0]))
-        #     context.move_to(pixxFM_right + 1, pixyFM_right + self._PIXY_FADEMARKER_HEIGHT - 1)
-        #     context.show_text("%s%%"% int(self.fadeMarkers[1]))
-        #     context.stroke()
+            context.fill()
+
+            context.set_source_rgba(1,1,1,1)
+            context.move_to(pixxFM_left + 1, pixyFM_left + self._PIXY_FADEMARKER_HEIGHT - 1)
+            context.show_text("%s%%" % int(self.fadeMarkers[0]))
+            context.move_to(pixxFM_right + 1, pixyFM_right + self._PIXY_FADEMARKER_HEIGHT - 1)
+            context.show_text("%s%%"% int(self.fadeMarkers[1]))
+            context.stroke()
 
             # redo the rectangles so they're the path and we can in_fill() check later
-        #     context.rectangle(pixxFM_left, pixyFM_left,
-        #                       self._PIXX_FADEMARKER_WIDTH, self._PIXY_FADEMARKER_HEIGHT)
-        #     context.rectangle(pixxFM_right, pixyFM_right,
-        #                       self._PIXX_FADEMARKER_WIDTH, self._PIXY_FADEMARKER_HEIGHT)
-        #     self.fadeMarkersContext = context
+            context.rectangle(pixxFM_left, pixyFM_left,
+                              self._PIXX_FADEMARKER_WIDTH, self._PIXY_FADEMARKER_HEIGHT)
+            context.rectangle(pixxFM_right, pixyFM_right,
+                              self._PIXX_FADEMARKER_WIDTH, self._PIXY_FADEMARKER_HEIGHT)
+            self.fadeMarkersContext = context
 
         # Draw our cut icon last so it doesn't get covered by selections
         if self.highlightCursor and not self.isDraggingFade and not self.event.isLoading:
@@ -516,26 +517,27 @@ class EventViewer(Gtk.DrawingArea):
         # if not self.messageID:
         #     self.messageID = self.mainview.SetStatusBar(_("To <b>Split, Double-Click</b> the wave - To <b>Select, Shift-Click</b> and drag the mouse"))
 
-        # if self.isDraggingFade:
+        if self.isDraggingFade:
             #subtract half the fademarker height so it doesnt go half off the screen
-        #     cur_pos = (mouse.y - (self._PIXY_FADEMARKER_HEIGHT / 2))
-        #     height = self.get_allocated_height() - self._PIXY_FADEMARKER_HEIGHT
-        #     percent = cur_pos / float(height)
+            cur_pos = (y - (self._PIXY_FADEMARKER_HEIGHT / 2))
+            height = self.get_allocated_height() - self._PIXY_FADEMARKER_HEIGHT
+            percent = cur_pos / float(height)
             #set percent between 0 and 1
-        #     percent = min(1, max(0, percent))
+            percent = min(1, max(0, percent))
 
-        #     self.fadeMarkers[self.fadeBeingDragged] = 100 - int(percent * 100)
-        #     self.queue_draw()
+            self.fadeMarkers[self.fadeBeingDragged] = 100 - int(percent * 100)
+            self.queue_draw()
 
         #     if not self.volmessageID:
         #         self.volmessageID = self.mainview.SetStatusBar(_("<b>Drag</b> the red sliders to modify the volume fade."))
 
-        #     return True
+            return True
 
-        # if self.fadeMarkersContext and self.fadeMarkersContext.in_fill(mouse.x, mouse.y):
+        if self.fadeMarkersContext and self.fadeMarkersContext.in_fill(x, y):
             # quit this function now, so the highlightCursor doesn't move
             # while you're over a fadeMarker
-        #     return True
+            return True
+
         # GDK control mask
         #print(x, y)
         state_mask = controller.get_current_event_state()
@@ -654,8 +656,8 @@ class EventViewer(Gtk.DrawingArea):
         elif button == 1:
             # check to see if the user clicked on the cancel button
             # FIXME
-            # if self.cancelButtonArea.x <= mouse.x <= self.cancelButtonArea.width+self.cancelButtonArea.x \
-            #     and self.cancelButtonArea.y <= mouse.y <= self.cancelButtonArea.height+self.cancelButtonArea.y \
+            # if self.cancelButtonArea.x <= press_x <= self.cancelButtonArea.width+self.cancelButtonArea.x \
+            #     and self.cancelButtonArea.y <= press_y <= self.cancelButtonArea.height+self.cancelButtonArea.y \
             #     and self.event.isLoading:
             #     self.OnDelete()
             #     return True
@@ -667,19 +669,19 @@ class EventViewer(Gtk.DrawingArea):
                 self.isSelecting = True
                 self.event.selection[0] = self.SecFromPixX(press_x)
                 self.fadeMarkers = [100,100]
-                if not self.selmessageID:
-                    self.selmessageID = self.mainview.SetStatusBar(_("<b>Click</b> the buttons below the selection to do something to that portion of audio."))
+                # if not self.selmessageID:
+                #     self.selmessageID = self.mainview.SetStatusBar(_("<b>Click</b> the buttons below the selection to do something to that portion of audio."))
             else:
                 # FIXME fade ops
-                # if self.fadeMarkersContext and self.fadeMarkersContext.in_fill(mouse.x, mouse.y):
+                if self.fadeMarkersContext and self.fadeMarkersContext.in_fill(press_x, press_y):
                     # LMB over a fadeMarker: drag that marker
-                #     self.isDraggingFade = True
-                #     if mouse.x > self.PixXFromSec(self.event.selection[1]) - self._PIXX_FADEMARKER_WIDTH - 1:
-                #         self.fadeBeingDragged = 1
-                #         return True
-                #     else:
-                #         self.fadeBeingDragged = 0
-                #         return True
+                    self.isDraggingFade = True
+                    if press_x > self.PixXFromSec(self.event.selection[1]) - self._PIXX_FADEMARKER_WIDTH - 1:
+                        self.fadeBeingDragged = 1
+                        return True
+                    else:
+                        self.fadeBeingDragged = 0
+                        return True
 
                 if press_count >= 2:
                     print("CUT CUT CUT CUT CUT")
@@ -690,15 +692,15 @@ class EventViewer(Gtk.DrawingArea):
                     return True
 
                 # remove any existing selection in this event
-        #         self.event.selection = [0,0]
-        #         if self.drawer.get_parent() == self.lane.fixed:
-        #             self.lane.fixed.remove(self.drawer)
-        #             if self.volmessageID:   #clear status bar if not already clear
-        #                 self.mainview.ClearStatusBar(self.volmessageID)
-        #                 self.volmessageID = None
-        #             if self.selmessageID:   #clear status bar if not already clear
-        #                 self.mainview.ClearStatusBar(self.selmessageID)
-        #                 self.selmessageID = None
+                self.event.selection = [0,0]
+                if self.drawer.get_parent() == self.lane.fixed:
+                    self.lane.fixed.remove(self.drawer)
+                    if self.volmessageID:   #clear status bar if not already clear
+                        self.mainview.ClearStatusBar(self.volmessageID)
+                        self.volmessageID = None
+                    if self.selmessageID:   #clear status bar if not already clear
+                        self.mainview.ClearStatusBar(self.selmessageID)
+                        self.selmessageID = None
                 self.isDragging = True
                 self.eventStart = self.event.start
                 self.mouseAnchor = [press_x, press_y]
@@ -1021,10 +1023,10 @@ class EventViewer(Gtk.DrawingArea):
                     print(self.eventStart)
                     self.event.Move(self.event.start, self.eventStart)
                     return False #need to pass this button release up to RecordingView
-            # elif self.isDraggingFade:
-            #     self.isDraggingFade = False
+            elif self.isDraggingFade:
+                 self.isDraggingFade = False
                 # set the audioFadePoints appropriately
-            #     self.SetAudioFadePointsFromCurrentSelection()
+                 self.SetAudioFadePointsFromCurrentSelection()
             if self.isSelecting:
                 print("SELECTION UP")
                 self.isSelecting = False
@@ -1398,6 +1400,7 @@ class EventViewer(Gtk.DrawingArea):
             x = int(self.PixXFromSec(selection[1]) - width)
 
         self.lane.PutDrawer(self.drawer, eventx + x)
+        # FIXME
         #don't update the lane because it calls us and that might cause infinite loop
 
     #_____________________________________________________________________

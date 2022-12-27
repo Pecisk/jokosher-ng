@@ -165,3 +165,23 @@ class EventLaneViewer(Gtk.Box):
         """
         for event in self.eventViewerList:
             self.UpdatePosition(event)
+
+    def PutDrawer(self, drawer, xvalue=1):
+        """
+        Places the drawer below in the event lane and makes it visible.
+
+        Parameters:
+            drawer -- the widget to show.
+            xvalue -- the horizontal position of the drawer in pixels
+        """
+        # if self.small:
+        #     yvalue = 30
+        # else:
+        yvalue = 75
+
+        if not drawer.get_parent():
+            self.fixed.put(drawer, xvalue, yvalue)
+        elif drawer.get_parent() == self.fixed:
+            self.fixed.move(drawer, xvalue, yvalue)
+
+        drawer.show()
