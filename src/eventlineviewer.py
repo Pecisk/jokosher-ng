@@ -99,7 +99,8 @@ class EventLineViewer(Gtk.Box):
 
     def on_mouse_move(self, controller, x, y):
         if controller.is_pointer():
-            print("eventlineviewer move")
+            pass
+            #print("eventlineviewer move")
 
     def on_mouse_leave(self, controller):
         print("eventlineviewer leave")

@@ -12,7 +12,8 @@
         "--socket=wayland",
         "--socket=pulseaudio",
         "--env=GST_DEBUG_DUMP_DOT_DIR=/home/peteriskrisjanis",
-        "--env=JOKOSHER_DATA_PATH=/app/share/jokosher"
+        "--env=JOKOSHER_DATA_PATH=/app/share/jokosher",
+        "--env=JOKOSHER_IMAGE_PATH=/app/share/jokosher/images"
     ],
     "cleanup" : [
         "/include",

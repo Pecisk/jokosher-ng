@@ -3,6 +3,8 @@ import cairo
 from .utils import Utils
 import itertools
 import sys
+import os
+from .settings import Settings
 
 class EventViewer(Gtk.DrawingArea):
     """
@@ -58,6 +60,10 @@ class EventViewer(Gtk.DrawingArea):
 
         Gtk.DrawingArea.__init__(self)
 
+        # gotta get those settings
+        app = Gio.Application.get_default()
+        self.settings = app.settings
+
         self.key_controller = Gtk.EventControllerKey.new()
         self.add_controller(self.key_controller)
         self.mouse_controller = Gtk.GestureClick.new()
@@ -68,7 +74,7 @@ class EventViewer(Gtk.DrawingArea):
         # self.connect("focus-in-event", self.OnFocus)
         # self.connect("focus-out-event", self.OnFocusLost)
         self.key_controller.connect("key-pressed", self.on_key_press)
-        self.key_controller.connect("key-released", self.OnKeyRelease)
+        self.key_controller.connect("key-released", self.on_key_release)
         # we listen to all buttons
         self.mouse_controller.set_button(0)
         self.mouse_controller.connect("released", self.on_mouse_up)
@@ -117,42 +123,40 @@ class EventViewer(Gtk.DrawingArea):
         self.event.connect("selected", self.on_event_selected)
 
         # This defines where the blue cursor indicator should be drawn (in pixels)
-        # self.highlightCursor = None
-        # self.fadeMarkersContext = None
+        self.highlightCursor = None
+        self.fadeMarkersContext = None
 
-        # self.splitImg = cairo.ImageSurface.create_from_png(os.path.join(Globals.IMAGE_PATH, "icon_split.png"))
-        # self.cancelImg = cairo.ImageSurface.create_from_png(os.path.join(Globals.IMAGE_PATH, "icon_cancel.png"))
-        # self.cancelButtonArea = Utils.GdkRectangle(85, 3, self.cancelImg.get_width(), self.cancelImg.get_height())
+        print(self.settings.IMAGE_PATH)
+        self.splitImg = cairo.ImageSurface.create_from_png(os.path.join(self.settings.IMAGE_PATH, "icon_split.png"))
+        self.cancelImg = cairo.ImageSurface.create_from_png(os.path.join(self.settings.IMAGE_PATH, "icon_cancel.png"))
+        self.cancelButtonArea = Utils.GdkRectangle(85, 3, self.cancelImg.get_width(), self.cancelImg.get_height())
 
         # drawer: this will probably be its own object in time
-        # self.drawer = Gtk.HBox()
-        # trimButton = Gtk.Button()
-        # trimimg = Gtk.Image()
+        self.drawer = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+        trimButton = Gtk.Button()
+        trimimg = Gtk.Image.new_from_file(os.path.join(self.settings.IMAGE_PATH, "icon_trim.png"))
         # trimimg.set_from_file(os.path.join(Globals.IMAGE_PATH, "icon_trim.png"))
-        # trimButton.set_image(trimimg)
-        # trimButton.set_tooltip_text(_("Trim"))
-
-        # self.drawer.add(trimButton)
+        trimButton.set_child(trimimg)
+        trimButton.set_tooltip_text(_("Trim"))
+        self.drawer.append(trimButton)
         # trimButton.connect("clicked", self.TrimToSelection)
 
-        # delFPButton = Gtk.Button()
-        # delimg = Gtk.Image()
-        # delimg.set_from_file(os.path.join(Globals.IMAGE_PATH, "icon_fpdelete.png"))
-        # delFPButton.set_image(delimg)
-        # self.drawer.add(delFPButton)
+        delFPButton = Gtk.Button()
+        delimg = Gtk.Image.new_from_file(os.path.join(self.settings.IMAGE_PATH, "icon_fpdelete.png"))
+        delFPButton.set_child(delimg)
+        self.drawer.append(delFPButton)
         # delFPButton.connect("clicked", self.DeleteSelectedFadePoints)
-        # delFPButton.set_tooltip_text(_("Delete Fade Points"))
+        delFPButton.set_tooltip_text(_("Delete Fade Points"))
 
-        # snapFPButton = Gtk.Button()
-        # snapimg = Gtk.Image()
-        # snapimg.set_from_file(os.path.join(Globals.IMAGE_PATH, "icon_fpsnap.png"))
-        # snapFPButton.set_image(snapimg)
-        # self.drawer.add(snapFPButton)
+        snapFPButton = Gtk.Button()
+        snapimg = Gtk.Image.new_from_file(os.path.join(self.settings.IMAGE_PATH, "icon_fpsnap.png"))
+        snapFPButton.set_child(snapimg)
+        self.drawer.append(snapFPButton)
         # snapFPButton.connect("clicked", self.SnapSelectionToFadePoints)
-        # snapFPButton.set_tooltip_text(_("Snap To Fade Points"))
+        snapFPButton.set_tooltip_text(_("Snap To Fade Points"))
 
-        # self.drawer.set_sensitive(not self.event.isLoading)
-        # self.drawer.show()
+        self.drawer.set_sensitive(not self.event.isLoading)
+        self.drawer.show()
 
         # we replace mainview with application
         self.application = Gio.Application.get_default()
@@ -246,26 +250,26 @@ class EventViewer(Gtk.DrawingArea):
         # context.stroke()
 
         #Don't draw any cut markers, cause we cant cut while recording!
-        # if self.event.instrument.project.GetIsRecording():
-        #     return
+        if self.event.instrument.project.GetIsRecording():
+            return
 
         # Draw the highlight cursor if it's over us and we're not dragging a fadeMarker
-        # if self.highlightCursor and not self.isDraggingFade and not self.event.isLoading:
-        #     context.move_to(self.highlightCursor, 0)
-        #     context.line_to(self.highlightCursor, self.get_allocated_height())
-        #     context.set_source_rgb(*self._HIGHLIGHT_POSITION_RGB)
-        #     context.set_dash([3,1],1)
-        #     context.stroke()
+        if self.highlightCursor and not self.isDraggingFade and not self.event.isLoading:
+            context.move_to(self.highlightCursor, 0)
+            context.line_to(self.highlightCursor, self.get_allocated_height())
+            context.set_source_rgb(*self._HIGHLIGHT_POSITION_RGB)
+            context.set_dash([3,1],1)
+            context.stroke()
 
         # Overlay an extra rect if there is a selection
-        # self.fadeMarkersContext = None
-        # if self.event.selection != [0,0]:
-        #     x1,x2 = self.GetSelectionAsPixels()
-        #     if x2 < x1:
-        #         x2,x1 = x1,x2
-        #     context.rectangle(x1, 0, x2 - x1, area.height)
-        #     context.set_source_rgba(*self._SELECTION_RGBA)
-        #     context.fill()
+        self.fadeMarkersContext = None
+        if self.event.selection != [0,0]:
+            x1,x2 = self.GetSelectionAsPixels()
+            if x2 < x1:
+                x2,x1 = x1,x2
+            context.rectangle(x1, 0, x2 - x1, area.height)
+            context.set_source_rgba(*self._SELECTION_RGBA)
+            context.fill()
 
             #subtract fade marker height so that it is not drawn partially offscreen
         #     padded_height = self.get_allocated_height() - self._PIXY_FADEMARKER_HEIGHT
@@ -310,10 +314,10 @@ class EventViewer(Gtk.DrawingArea):
         #     self.fadeMarkersContext = context
 
         # Draw our cut icon last so it doesn't get covered by selections
-        # if self.highlightCursor and not self.isDraggingFade and not self.event.isLoading:
-        #     context.set_source_surface(self.splitImg, self.highlightCursor, 0)
-        #     context.rectangle(self.highlightCursor, 0, self.splitImg.get_width(), self.splitImg.get_height())
-        #     context.paint()
+        if self.highlightCursor and not self.isDraggingFade and not self.event.isLoading:
+            context.set_source_surface(self.splitImg, self.highlightCursor, 0)
+            context.rectangle(self.highlightCursor, 0, self.splitImg.get_width(), self.splitImg.get_height())
+            context.paint()
         return False
 
     #_____________________________________________________________________
@@ -505,7 +509,7 @@ class EventViewer(Gtk.DrawingArea):
         Returns:
             True -- stop GTK signal propagation.
         """
-        print("eventviewer move")
+        #print("eventviewer move")
         # if self.get_window() is None or self.event.instrument.project.GetIsRecording():
         #     return True #don't let the intrument viewer handle it
         # display status bar message if has not already been displayed
@@ -567,27 +571,25 @@ class EventViewer(Gtk.DrawingArea):
                 # and the mouseAnchor must be updated manually.
                 delta = (self.event.start - temp) * self.project.view_scale
                 self.mouseAnchor[0] += int(delta)
-
-
             self.highlightCursor = None
-        # elif self.isSelecting:
-        #     x2 = max(0, min(self.get_allocated_width(), mouse.x))
-        #     self.event.selection[1] = self.SecFromPixX(x2)
-        #     self.UpdateFadeMarkers()
+        elif self.isSelecting:
+            print("SELECTION continues")
+            x2 = max(0, min(self.get_allocated_width(), x))
+            self.event.selection[1] = self.SecFromPixX(x2)
+            self.UpdateFadeMarkers()
 
-        #     selection_direction = "ltor"
-        #     selection = self.event.selection
-        #     if selection[0] > selection[1]:
-        #         selection_direction = "rtol"
-        #         self.fadeMarkers.reverse()
+            selection_direction = "ltor"
+            selection = self.event.selection
+            if selection[0] > selection[1]:
+                selection_direction = "rtol"
+                self.fadeMarkers.reverse()
 
-            #set the drawer align position
-        #     self.drawerAlignToLeft = (selection_direction == "rtol")
-            #move the drawer to its proper position
-        #     self.UpdateDrawerPosition(selection_direction == "rtol")
-
-        # else:
-        #     self.highlightCursor = mouse.x
+            # set the drawer align position
+            self.drawerAlignToLeft = (selection_direction == "rtol")
+            # move the drawer to its proper position
+            self.UpdateDrawerPosition(selection_direction == "rtol")
+        else:
+            self.highlightCursor = x
 
         # print("MOVE OOPSIE " + str(self.event.start))
         self.queue_draw()
@@ -658,15 +660,15 @@ class EventViewer(Gtk.DrawingArea):
             #     self.OnDelete()
             #     return True
 
-            if state_mask == 'GDK_SHIFT_MASK':
-                pass
+            if state_mask == Gdk.ModifierType.SHIFT_MASK:
                 # LMB+shift: remove any existing selection in this event, begin
                 #   selecting part of this event
-        #         self.isSelecting = True
-        #         self.event.selection[0] = self.SecFromPixX(mouse.x)
-        #         self.fadeMarkers = [100,100]
-        #         if not self.selmessageID:
-        #             self.selmessageID = self.mainview.SetStatusBar(_("<b>Click</b> the buttons below the selection to do something to that portion of audio."))
+                print("SELECTION AT WORK")
+                self.isSelecting = True
+                self.event.selection[0] = self.SecFromPixX(press_x)
+                self.fadeMarkers = [100,100]
+                if not self.selmessageID:
+                    self.selmessageID = self.mainview.SetStatusBar(_("<b>Click</b> the buttons below the selection to do something to that portion of audio."))
             else:
                 # FIXME fade ops
                 # if self.fadeMarkersContext and self.fadeMarkersContext.in_fill(mouse.x, mouse.y):
@@ -907,7 +909,7 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def OnKeyRelease(self, widget, event):
+    def on_key_release(self, controller, keyval, keycode, state):
         """
             Handle releasing of ALT key to stop drawing selection.
 
@@ -920,8 +922,11 @@ class EventViewer(Gtk.DrawingArea):
                 False -- pass this event on to other handlers because we don't want it.
         """
 
-        key = Gdk.keyval_name(event.keyval)
-        if self.isSelecting and "GDK_MOD1_MASK" in event.state.value_names and (key == "Left" or key == "Right"):
+        # GDK control mask
+        state_mask = controller.get_current_event_state()
+
+        key = Gdk.keyval_name(keyval)
+        if self.isSelecting and state_mask == Gdk.ModifierType.ALT_MASK and (key == "Left" or key == "Right"):
             self.isSelecting = False
             self.highlightCursor = None
             self.ShowDrawer()
@@ -1021,9 +1026,9 @@ class EventViewer(Gtk.DrawingArea):
                 # set the audioFadePoints appropriately
             #     self.SetAudioFadePointsFromCurrentSelection()
             if self.isSelecting:
+                print("SELECTION UP")
                 self.isSelecting = False
-                # FIXME wtf is drawer here?
-                #self.ShowDrawer()
+                self.ShowDrawer()
         # claim sequence
         controller.set_state(Gtk.EventSequenceState.CLAIMED)
         return True
@@ -1484,8 +1489,12 @@ class EventViewer(Gtk.DrawingArea):
         self.queue_resize()
         self.queue_draw()
 
-    #____________________________________________________________________
-
-
-#=========================================================================       
+    def UpdateFadeMarkers(self):
+        """
+        Called when the a fade point's value changes, to update the graphical
+        marker over the waveform.
+        """
+        return
+        # FIXME fade points
+        # self.fadeMarkers = [self.event.GetFadeLevelAtPoint(x) * 100 for x in self.event.selection]
 

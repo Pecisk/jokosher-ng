@@ -38,3 +38,4 @@ endif
 
 subdir('icons')
 subdir('instruments')
+subdir('images')
