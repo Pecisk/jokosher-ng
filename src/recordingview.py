@@ -59,6 +59,7 @@ class RecordingView(Gtk.Frame):
         # self.zoom_hb.prepend(self.zoomSlider)
 
         self.project.connect("instrument::added", self.on_add_instrument)
+        self.project.connect("instrument::removed", self.on_instrument_removed)
 
         #add the instruments that were loaded from the project file already
         for instr in self.project.instruments:
@@ -70,3 +71,19 @@ class RecordingView(Gtk.Frame):
 
     def on_instrument_window_scroll(self, adjustment):
         self.project.set_view_start(adjustment.get_value())
+
+    def on_instrument_removed(self, project, instrument):
+        """
+        Callback for when an instrument is removed from the project.
+
+        Parameters:
+            project -- The project that the instrument was removed from.
+            instrument -- The instrument that was removed.
+        """
+        for ID, instrViewer in self.views:
+            if ID == instrument.id:
+                if instrViewer.get_parent():
+                    self.instrumentBox.remove(instrViewer)
+                instrViewer.destroy()
+                self.views.remove((ID, instrViewer))
+                break

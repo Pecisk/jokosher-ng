@@ -61,10 +61,12 @@ class InstrumentInfoBox(Gtk.Box):
 
     def on_instrument_selected(self, instrument):
         print("Instrument Info Box gets callback on selection")
+        self.add_css_class('instrumentinfobox-selected')
         return True
 
     def on_mouse_down(self, controller, press_count, press_x, press_y):
         print("Instrument Info Box is selected")
+        self.instrument.set_selected(True)
         return True
 
     # def on_mouse_move(self, controller, x, y):

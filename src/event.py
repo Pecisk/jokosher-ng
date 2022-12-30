@@ -839,17 +839,17 @@ class Event(GObject.GObject):
 
         if self.bus:
             self.bus.remove_signal_watch()
-            #self.bus = None
+            self.bus = None
         if self.loadingPipeline:
             self.loadingPipeline.set_state(Gst.State.NULL)
 
             if finishedLoading and self.levels_list:
                 self.levels_list.tofile(self.GetAbsLevelsFile())
-                #del_on_close_list = self.instrument.project.deleteOnCloseAudioFiles
+                del_on_close_list = self.instrument.project.deleteOnCloseAudioFiles
                 # this event might not be in the project file yet
                 # if so, levels_file should be deleted when audio file is deleted on exit
-                #if self.GetAbsFile() in del_on_close_list:
-                #    del_on_close_list.append(self.GetAbsLevelsFile())
+                if self.GetAbsFile() in del_on_close_list:
+                    del_on_close_list.append(self.GetAbsLevelsFile())
 
                 #inc = IncrementalSave.CompleteLoading(self.id, self.duration, self.levels_file)
                 #self.instrument.project.SaveIncrementalAction(inc)
@@ -1277,8 +1277,8 @@ class Event(GObject.GObject):
                 ]
 
         #Since we are saving the path to the project file, don't delete it on exit
-        # if self.GetAbsFile() in self.instrument.project.deleteOnCloseAudioFiles:
-        #     self.instrument.project.deleteOnCloseAudioFiles.remove(self.GetAbsFile())
+        if self.GetAbsFile() in self.instrument.project.deleteOnCloseAudioFiles:
+            self.instrument.project.deleteOnCloseAudioFiles.remove(self.GetAbsFile())
 
         Utils.store_params_to_xml(self, doc, params, items)
 
@@ -1289,7 +1289,6 @@ class Event(GObject.GObject):
 
         if self.levels_list:
             self.levels_list.tofile(self.GetAbsLevelsFile())
-        # if self.GetAbsLevelsFile() in self.instrument.project.deleteOnCloseAudioFiles:
-        #     self.instrument.project.deleteOnCloseAudioFiles.remove(self.GetAbsLevelsFile()))
-
+        if self.GetAbsLevelsFile() in self.instrument.project.deleteOnCloseAudioFiles:
+            self.instrument.project.deleteOnCloseAudioFiles.remove(self.GetAbsLevelsFile())
 

@@ -17,9 +17,7 @@
 #
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-from gi.repository import Adw
-from gi.repository import Gtk
-from gi.repository import Gio
+from gi.repository import Adw, Gtk, Gio, Gdk
 from .workspace import Workspace
 from .instrumentviewer import InstrumentViewer
 from .platform_utils import PlatformUtils
@@ -62,6 +60,17 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.record_button.connect("toggled", self.record_button_cb)
         self.mixer_button.connect("toggled", self.mixer_button_cb)
         self.scale_show_button.connect("toggled", self.scale_button_cb)
+
+        # add key handler
+        self.key_controller = Gtk.EventControllerKey.new()
+        self.add_controller(self.key_controller)
+        self.key_controller.connect("key-pressed", self.on_key_press)
+
+    def on_key_press(self, controller, keyval, keycode, state):
+        key = Gdk.keyval_name(keyval)
+        if key == "Delete":
+            self.on_delete()
+        return True
 
     def mixer_button_cb(self, button):
         if button.get_active():
@@ -168,6 +177,34 @@ class JokosherWindow(Adw.ApplicationWindow):
         # except ProjectManager.OpenProjectError as e:
         #     self.ShowOpenProjectErrorDialog(e, parent)
         #     return False
+
+    def on_delete(self, widget=None):
+        """
+        Deletes the currently selected instruments or events.
+
+        Parameters:
+            widget -- reserved for GTK callbacks, don't use it explicitly.
+        """
+        if self.project.GetIsRecording() or self.props.application.isPlaying or self.props.application.isPaused:
+            return
+
+        # list to store instruments to delete, so we don't modify the list while we are iterating
+        instrOrEventList = []
+        eventList = []
+        # Delete any select instruments
+        for instr in self.project.instruments:
+            if (instr.isSelected):
+                #set not selected so when we undo we don't get two selected instruments
+                instr.isSelected = False
+                instrOrEventList.append(instr)
+            else:
+                # Delete any selected events
+                for ev in instr.events:
+                    if ev.isSelected:
+                        instrOrEventList.append(ev)
+
+        if instrOrEventList:
+            self.project.DeleteInstrumentsOrEvents(instrOrEventList)
 
     # GtkFileDialog - need gtk update
     # def do_add_audio(self, widget, _):

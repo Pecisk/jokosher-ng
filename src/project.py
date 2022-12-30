@@ -9,6 +9,7 @@ import xml.dom.minidom as xml
 from .utils import Utils
 import gzip
 from .instrument import Instrument
+from .event import Event
 from .globals import Globals
 from .platform_utils import PlatformUtils
 from .projectutilities import ProjectUtilities
@@ -1011,6 +1012,75 @@ class Project(GObject.GObject):
         """
         for instr in self.instruments:
             instr.on_mute()
+
+    def DeleteInstrument(self, id):
+        """
+        Removes the instrument matching id from the Project.
+
+        Considerations:
+            In most cases, DeleteInstrumentsOrEvents() should be used instead
+            of this function to ensure that the undo actions are made atomic.
+
+        Parameters:
+            id -- unique ID of the instument to remove.
+        """
+
+        instrs = [x for x in self.instruments if x.id == id]
+        # if not instrs:
+        #     raise UndoSystem.CancelUndoCommand()
+
+        instr = instrs[0]
+        instr.RemoveAndUnlinkPlaybackbin()
+
+        self.graveyard.append(instr)
+        self.instruments.remove(instr)
+        if instr.isSolo:
+            self.soloInstrCount -= 1
+            self.OnAllInstrumentsMute()
+
+        for event in instr.events:
+            event.StopGenerateWaveform(False)
+
+        self.temp = id
+        self.emit("instrument::removed", instr)
+
+    def DeleteInstrumentsOrEvents(self, instrumentOrEventList):
+        """
+        Removes the given instruments the Project.
+
+        Parameters:
+            instrumentList -- a list of Instrument instances to be removed.
+        """
+        #undoAction = self.NewAtomicUndoAction()
+        for instrOrEvent in instrumentOrEventList:
+            if isinstance(instrOrEvent, Instrument):
+                self.DeleteInstrument(instrOrEvent.id) #, _undoAction_=undoAction)
+            elif isinstance(instrOrEvent, Event):
+                instrOrEvent.instrument.DeleteEvent(instrOrEvent.id) #, _undoAction_=undoAction)
+
+    def close_project(self):
+        """
+        Closes down this Project.
+        """
+        print("CLOSE PROJECT II")
+
+        # when closing the file, the user chooses to either save, or discard
+        # in either case, we don't need the incremental save file anymore
+        # path, ext = os.path.splitext(self.projectfile)
+        # filename = path + self.INCREMENTAL_SAVE_EXT
+        # try:
+        #     if os.path.exists(filename):
+        #         os.remove(filename)
+        # except OSError:
+        #     Globals.debug("Removal of .incremental failed! Next load we will try to restore unrestorable state!")
+        print(self.deleteOnCloseAudioFiles)
+        for file in self.deleteOnCloseAudioFiles:
+            if os.path.exists(file):
+                Globals.debug("Deleting copied audio file:", file)
+                os.remove(file)
+        self.deleteOnCloseAudioFiles = []
+
+        self.mainpipeline.set_state(Gst.State.NULL)
 
 class CreateProjectError(Exception):
     """

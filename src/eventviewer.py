@@ -475,14 +475,14 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def Destroy(self):
+    def destroy(self):
         """
         Called when the EventViewer gets destroyed.
         It also destroys any child widget and disconnects itself from any
         GObject signals.
         """
         self.project.disconnect_by_func(self.OnProjectZoom)
-        self.event.disconnect_by_func(self.OnEventSelected)
+        self.event.disconnect_by_func(self.on_event_selected)
         self.event.disconnect_by_func(self.OnEventCorrupt)
         self.event.disconnect_by_func(self.OnEventLength)
         self.event.disconnect_by_func(self.OnEventLoading)
@@ -490,10 +490,11 @@ class EventViewer(Gtk.DrawingArea):
         self.event.disconnect_by_func(self.OnEventWaveform)
 
         #delete the cached images
-        del self.sourceSmall
+        #del self.sourceSmall
         del self.sourceLarge
         del self.cancelImg
-        self.destroy()
+        # FIXME due of gtk 4 / python lack of support for dispose() we have to carefully remove all references
+        self.run_dispose()
 
     #_____________________________________________________________________
 
@@ -801,11 +802,6 @@ class EventViewer(Gtk.DrawingArea):
 
 
         key = Gdk.keyval_name(keyval)
-
-        if key == "Delete":
-            # FIXME this was missing from old mission, possibly requiring explictly call it via context menu
-            # for testing convinience
-            print("hitting that delete buttonsz")
 
         if key == "Return":
             # Toggle if this event is selected or not
@@ -1351,7 +1347,6 @@ class EventViewer(Gtk.DrawingArea):
         volRight = self.fadeMarkers[1] / 100.0
 
         selection = self.event.selection
-        self.event.AddAudioFadePoints(selection[0], selection[1], volLeft, volRight)
 
     #_____________________________________________________________________
 

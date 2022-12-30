@@ -14,3 +14,13 @@ class InstrumentViewer(Gtk.Box):
         self.main_box.append(self.eventLane)
         self.eventLane.set_property('hexpand', True)
         self.eventLane.set_property('halign', Gtk.Align.FILL)
+
+    def Destroy(self):
+        """
+        Called when the InstrumentViewer is closed
+        This method also destroys the corresponding EventLaneViewer.
+        """
+        # FIXME
+        #self.instrument.disconnect_by_func(self.OnInstrumentImage)
+        self.eventLane.destroy()
+        self.destroy()

@@ -263,7 +263,7 @@ class Instrument(GObject.GObject):
             event = self.add_event_from_gfile(start, gfile)
             if event:
                 event.MoveButDoNotOverlap(event.start)
-                #event.SetProperties()
+                event.SetProperties()
                 start += event.duration
 
     def add_event_from_gfile(self, start, gfile, name=None):
@@ -279,6 +279,9 @@ class Instrument(GObject.GObject):
 
         # copy file over
         audio_file = os.path.join(self.project.audio_path, newfile)
+
+        # append to clean up
+        self.project.deleteOnCloseAudioFiles.append(audio_file)
 
         # TODO gfile copy
         # TODO create destination gfile
@@ -336,6 +339,9 @@ class Instrument(GObject.GObject):
 
         # copy file over
         audio_file = os.path.join(self.project.audio_path, newfile)
+
+        # append to clean up
+        self.project.deleteOnCloseAudioFiles.append(audio_file)
 
         try:
             shutil.copyfile(file, audio_file)
@@ -714,6 +720,25 @@ class Instrument(GObject.GObject):
             self.actuallyIsMuted = True
         else:
             self.actuallyIsMuted = False
+
+    #@UndoSystem.UndoCommand("ResurrectEvent", "temp")
+    def DeleteEvent(self, eventid):
+        """
+        Removes an Event from this Instrument.
+
+        Parameters:
+            eventid -- ID of the Event to be removed.
+        """
+        print("DeleteEvent triggered")
+        event = [x for x in self.events if x.id == eventid][0]
+
+        self.graveyard.append(event)
+        self.events.remove(event)
+        event.DestroyFilesource()
+        event.StopGenerateWaveform(False)
+
+        self.temp = eventid
+        self.emit("event::removed", event)
 
     @staticmethod
     def getInstruments():

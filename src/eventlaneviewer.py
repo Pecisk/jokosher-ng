@@ -19,6 +19,7 @@ class EventLaneViewer(Gtk.Box):
 
         # signals
         self.project.transport.connect("position", self.OnTransportPosition)
+        # FIXME
         # self.project.connect("view-start", self.OnProjectViewChange)
         self.project.connect("zoom", self.OnProjectViewChange)
         self.instrument.connect("event::removed", self.on_event_removed)
@@ -70,7 +71,25 @@ class EventLaneViewer(Gtk.Box):
         self.eventViewerList.append(child)
 
     def on_event_removed(self, instrument, event):
-        pass
+        """
+        Callback for when an event is removed from our instrument.
+
+        Parameters:
+            instrument -- the instrument instance that send the signal.
+            event -- the event instance that was removed.
+        """
+        for widget in self.eventViewerList:
+            if widget.event is event:
+                self.fixed.remove(widget)
+                # remove the event's drawer if it's showing
+                # FIXME sort out drawer detection
+                if widget.drawer.get_parent() == self.fixed:
+                    self.fixed.remove(widget.drawer)
+                #destroy the object
+                widget.destroy()
+                self.eventViewerList.remove(widget)
+                break
+
 
     def do_snapshot(self, snapshot):
         # do children first
@@ -88,11 +107,11 @@ class EventLaneViewer(Gtk.Box):
         # GDK control mask
         state_mask = controller.get_current_event_state()
 
-        # if state_mask == 'GDK_CONTROL_MASK':
-        #     self.instrument.SetSelected(True)
-        # else:
-        #     self.project.clear_event_selections()
-        #     self.project.select_instrument(self.instrument)
+        if state_mask == Gdk.ModifierType.CONTROL_MASK:
+             self.instrument.set_selected(True)
+        else:
+             self.project.clear_event_selections()
+             self.project.select_instrument(self.instrument)
 
         controller.set_state(Gtk.EventSequenceState.CLAIMED)
         return True
@@ -185,3 +204,21 @@ class EventLaneViewer(Gtk.Box):
             self.fixed.move(drawer, xvalue, yvalue)
 
         drawer.show()
+
+    def destroy(self):
+        """
+        Called when the EventLaneViewer gets destroyed.
+        It also destroys any child widget and disconnects itself from any
+        GObject signals.
+        """
+        self.project.transport.disconnect_by_func(self.OnTransportPosition)
+        #self.project.disconnect_by_func(self.OnProjectViewChange)
+        self.instrument.disconnect_by_func(self.on_event_added)
+        self.instrument.disconnect_by_func(self.on_event_removed)
+
+        for widget in self.fixed.get_children():
+            #Check that it is EventViewer (could be a button drawer)
+            if type(widget) == EventViewer:
+                widget.destroy()
+
+        self.destroy()
