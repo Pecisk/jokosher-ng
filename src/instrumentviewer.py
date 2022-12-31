@@ -15,7 +15,9 @@ class InstrumentViewer(Gtk.Box):
         self.eventLane.set_property('hexpand', True)
         self.eventLane.set_property('halign', Gtk.Align.FILL)
 
-    def Destroy(self):
+        self.instrument.connect("selected", self.on_instrument_selected)
+
+    def destroy(self):
         """
         Called when the InstrumentViewer is closed
         This method also destroys the corresponding EventLaneViewer.
@@ -23,4 +25,12 @@ class InstrumentViewer(Gtk.Box):
         # FIXME
         #self.instrument.disconnect_by_func(self.OnInstrumentImage)
         self.eventLane.destroy()
-        self.destroy()
+        self.unparent()
+        self.run_dispose()
+
+    def on_instrument_selected(self, instrument):
+        print("InstrumentViewer selected")
+        if instrument.isSelected:
+            self.add_css_class('instrumentinfobox-selected')
+        else:
+            self.remove_css_class('instrumentinfobox-selected')

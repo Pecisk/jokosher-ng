@@ -24,6 +24,7 @@ class EventLaneViewer(Gtk.Box):
         self.project.connect("zoom", self.OnProjectViewChange)
         self.instrument.connect("event::removed", self.on_event_removed)
         self.instrument.connect("event::added", self.on_event_added)
+        self.instrument.connect("selected", self.on_instrument_selected)
 
 
         # This defines where the blue cursor indicator should be drawn (in pixels)
@@ -36,7 +37,7 @@ class EventLaneViewer(Gtk.Box):
         self.mouseDownPos = [0,0]
 
         #the list of all the EventViewer widgets
-        self.eventViewerList = []
+        self.all_event_viewers = []
 
         # capture those clicks
         self.mouse_controller = Gtk.GestureClick.new()
@@ -55,6 +56,12 @@ class EventLaneViewer(Gtk.Box):
         for event in self.instrument.events:
             self.on_event_added(self.instrument, event)
 
+    def on_instrument_selected(self, instrument):
+        print("EventLaneViewer selected")
+        if instrument.isSelected:
+            self.fixed.add_css_class('instrumentinfobox-selected')
+        else:
+            self.fixed.remove_css_class('instrumentinfobox-selected')
 
     def on_event_added(self, instrument, event):
         """
@@ -68,7 +75,7 @@ class EventLaneViewer(Gtk.Box):
         child = EventViewer(self, self.project, event, self.get_allocated_height())
         self.fixed.put(child, x, 0)
         child.show()
-        self.eventViewerList.append(child)
+        self.all_event_viewers.append(child)
 
     def on_event_removed(self, instrument, event):
         """
@@ -78,7 +85,7 @@ class EventLaneViewer(Gtk.Box):
             instrument -- the instrument instance that send the signal.
             event -- the event instance that was removed.
         """
-        for widget in self.eventViewerList:
+        for widget in self.all_event_viewers:
             if widget.event is event:
                 self.fixed.remove(widget)
                 # remove the event's drawer if it's showing
@@ -87,7 +94,7 @@ class EventLaneViewer(Gtk.Box):
                     self.fixed.remove(widget.drawer)
                 #destroy the object
                 widget.destroy()
-                self.eventViewerList.remove(widget)
+                self.all_event_viewers.remove(widget)
                 break
 
 
@@ -182,7 +189,7 @@ class EventLaneViewer(Gtk.Box):
         Parameters:
             project -- The project instance that send the signal.
         """
-        for event in self.eventViewerList:
+        for event in self.all_event_viewers:
             self.UpdatePosition(event)
 
     def PutDrawer(self, drawer, xvalue=1):
@@ -216,9 +223,12 @@ class EventLaneViewer(Gtk.Box):
         self.instrument.disconnect_by_func(self.on_event_added)
         self.instrument.disconnect_by_func(self.on_event_removed)
 
-        for widget in self.fixed.get_children():
+        # FIXME needs get_first_child() etc.
+        # for widget in self.fixed.get_children():
             #Check that it is EventViewer (could be a button drawer)
-            if type(widget) == EventViewer:
-                widget.destroy()
-
-        self.destroy()
+        #     if type(widget) == EventViewer:
+        #         widget.destroy()
+        for event_viewer in self.all_event_viewers:
+            event_viewer.destroy()
+        self.unparent()
+        self.run_dispose()

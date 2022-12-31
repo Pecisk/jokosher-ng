@@ -12,8 +12,12 @@ class InstrumentInfoPane(Gtk.Box):
         # get all goods we need
         self.project = Project.get_current_project()
 
+        # store info boxes pointers for easy access for removal and information query
+        self.all_instrument_info_boxes = {}
+
         # connect to add instrument added signal
         self.project.connect("instrument::added", self.on_instrument_added)
+        self.project.connect("instrument::removed", self.on_instrument_removed)
 
         # FIXME do proper start offset from TimeLineBar
         self.header = Gtk.Box()
@@ -33,5 +37,10 @@ class InstrumentInfoPane(Gtk.Box):
             self.on_instrument_added(self.project, instr)
 
     def on_instrument_added(self, project, instrument):
-        self.instrument_info_box = InstrumentInfoBox(instrument=instrument)
-        self.instrument_info_pane_scrollable.append(self.instrument_info_box)   
+        instrument_info_box = InstrumentInfoBox(instrument=instrument)
+        self.instrument_info_pane_scrollable.append(instrument_info_box)
+        self.all_instrument_info_boxes[instrument.id] = instrument_info_box
+
+    def on_instrument_removed(self, project, instrument):
+        if instrument.id in self.all_instrument_info_boxes:
+            self.all_instrument_info_boxes[instrument.id].destroy()

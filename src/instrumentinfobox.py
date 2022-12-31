@@ -61,14 +61,27 @@ class InstrumentInfoBox(Gtk.Box):
 
     def on_instrument_selected(self, instrument):
         print("Instrument Info Box gets callback on selection")
-        self.add_css_class('instrumentinfobox-selected')
+        if instrument.isSelected:
+            self.add_css_class('instrumentinfobox-selected')
+        else:
+            self.remove_css_class('instrumentinfobox-selected')
         return True
 
     def on_mouse_down(self, controller, press_count, press_x, press_y):
         print("Instrument Info Box is selected")
-        self.instrument.set_selected(True)
+        if self.instrument.isSelected:
+            self.instrument.set_selected(False)
+        else:
+            self.instrument.set_selected(True)
         return True
 
     # def on_mouse_move(self, controller, x, y):
     #     print(controller.is_pointer())
     #     print(controller.contains_pointer())
+
+    def destroy(self):
+        self.record_button.disconnect_by_func(self.on_record_button_toggled)
+        self.solo_button.disconnect_by_func(self.on_solo_button_toggled)
+        self.instrument.disconnect_by_func(self.on_instrument_selected)
+        self.unparent()
+        self.run_dispose()

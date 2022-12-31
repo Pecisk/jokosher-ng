@@ -29,6 +29,8 @@ class RecordingView(Gtk.Frame):
         # set project view start for various UI bits, but mostly timeline
         self.instrumentWindow.get_hadjustment().connect("value-changed", self.on_instrument_window_scroll)
 
+        self.instrument_views = []
+
         # FIXME remove when adding scaling support somewhere else
         # self.hb = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         # self.hb.set_spacing(6)
@@ -66,8 +68,9 @@ class RecordingView(Gtk.Frame):
             self.on_add_instrument(self.project, instr)
 
     def on_add_instrument(self, project, instrument):
-        instrumentViewer = InstrumentViewer(instrument)
-        self.instrumentBox.append(instrumentViewer)
+        instrument_viewer = InstrumentViewer(instrument)
+        self.instrument_views.append((instrument.id, instrument_viewer))
+        self.instrumentBox.append(instrument_viewer)
 
     def on_instrument_window_scroll(self, adjustment):
         self.project.set_view_start(adjustment.get_value())
@@ -80,10 +83,11 @@ class RecordingView(Gtk.Frame):
             project -- The project that the instrument was removed from.
             instrument -- The instrument that was removed.
         """
-        for ID, instrViewer in self.views:
-            if ID == instrument.id:
-                if instrViewer.get_parent():
-                    self.instrumentBox.remove(instrViewer)
-                instrViewer.destroy()
-                self.views.remove((ID, instrViewer))
+        for instrument_id, instrument_viewer in self.instrument_views:
+            if instrument_id == instrument.id:
+                #if instrument_viewer.get_parent():
+                    # FIXME use unparenting from now on, as it is easer to use
+                    # self.instrumentBox.remove(instrument_viewer)
+                instrument_viewer.destroy()
+                self.instrument_views.remove((instrument_id, instrument_viewer))
                 break

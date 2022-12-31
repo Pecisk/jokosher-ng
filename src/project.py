@@ -1030,7 +1030,7 @@ class Project(GObject.GObject):
         #     raise UndoSystem.CancelUndoCommand()
 
         instr = instrs[0]
-        instr.RemoveAndUnlinkPlaybackbin()
+        instr.remove_and_unlink_playbackbin()
 
         self.graveyard.append(instr)
         self.instruments.remove(instr)
