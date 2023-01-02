@@ -73,6 +73,7 @@ class Event(GObject.GObject):
         # this is private, so if someone else wants a list of audio fade points
         # they must use the sorted list below.
         self.__fadePointsDict = {}
+        print(self.__fadePointsDict)
         # A list of control points for the audio fades
         # where each tuple is (<time in seconds>, <volume between 0 and 1>)
         # The list *must* be ordered by time-in-seconds, so when you update it from
@@ -329,7 +330,7 @@ class Event(GObject.GObject):
 
         dictLeft = {}
         dictRight = {}
-        for key, value in self.__fadePointsDict.iteritems():
+        for key, value in self.__fadePointsDict.items():
             if key < self.selection[0]:
                 dictLeft[key] = value
             if key > self.selection[0]:
@@ -1017,15 +1018,15 @@ class Event(GObject.GObject):
             secondVolume -- value of the final fade volume.
         """
         #for command manager to use with undo
-        self.temp = firstPoint
-        self.temp2 = secondPoint
-        self.temp3 = None
-        self.temp4 = None
+        # self.temp = firstPoint
+        # self.temp2 = secondPoint
+        # self.temp3 = None
+        # self.temp4 = None
 
-        if self.__fadePointsDict.has_key(firstPoint):
-            self.temp3 = self.__fadePointsDict[firstPoint]
-        if self.__fadePointsDict.has_key(secondPoint):
-            self.temp4 = self.__fadePointsDict[secondPoint]
+        # if firstPoint in self.__fadePointsDict:
+        #     self.temp3 = self.__fadePointsDict[firstPoint]
+        # if secondPoint in self.__fadePointsDict:
+        #     self.temp4 = self.__fadePointsDict[secondPoint]
 
         #we *must* compare to None here because audio points with volume 0 *are* allowed
         if firstPoint != None and firstVolume != None:
@@ -1091,9 +1092,11 @@ class Event(GObject.GObject):
         """
 
         #update the fade points list from the dictionary
-        self.audioFadePoints = self.__fadePointsDict.items()
+        # self.audioFadePoints = self.__fadePointsDict.items()
         #dicts dont have order, so sort after update
-        self.audioFadePoints.sort(key=lambda x: x[0])
+        # self.audioFadePoints.sort(key=lambda x: x[0])
+        self.audioFadePoints = list({k: self.__fadePointsDict[k] for k in sorted(self.__fadePointsDict)}.items())
+
 
         #only add beginning and end points if there are some other points already in the list
         if self.audioFadePoints:
@@ -1125,15 +1128,12 @@ class Event(GObject.GObject):
             #there are no fade points for us to use
             return
 
-        #fadePercents = []
-        #oneSecondInLevels = len(self.levels) / self.duration
-
-        self.fadeLevels = LevelsList.LevelsList()
+        self.fadeLevels = LevelsList()
 
         iterFadePoints = iter(self.audioFadePoints)
-        firstFadeTime, firstFadeValue = iterFadePoints.next()
+        firstFadeTime, firstFadeValue = next(iterFadePoints)
         firstFadeTime = int(firstFadeTime * 1000)    #convert to milliseconds
-        secondFadeTime, secondFadeValue = iterFadePoints.next()
+        secondFadeTime, secondFadeValue = next(iterFadePoints)
         secondFadeTime = int(secondFadeTime * 1000)    #convert to milliseconds
         # if less than one percent difference, assume they are the same
         sameValues = abs(firstFadeValue - secondFadeValue) < 0.01
@@ -1148,7 +1148,7 @@ class Event(GObject.GObject):
                 firstFadeTime = secondFadeTime
                 firstFadeValue = secondFadeValue
                 try:
-                    secondFadeTime, secondFadeValue = iterFadePoints.next()
+                    secondFadeTime, secondFadeValue = next(iterFadePoints)
                 except StopIteration:
                     Globals.debug("Event %d: endtime (%d) is after last fade point (%d,%d)"
                                   % (self.id, endtime, secondFadeTime, secondFadeValue))
@@ -1285,7 +1285,7 @@ class Event(GObject.GObject):
         xmlPoints = doc.createElement("FadePoints")
         ev.appendChild(xmlPoints)
         # FIXME restore fade point system
-        #Utils.store_dictionary_to_xml(doc, xmlPoints, self.__fadePointsDict, "FadePoint")
+        Utils.store_dictionary_to_xml(doc, xmlPoints, self.__fadePointsDict, "FadePoint")
 
         if self.levels_list:
             self.levels_list.tofile(self.GetAbsLevelsFile())

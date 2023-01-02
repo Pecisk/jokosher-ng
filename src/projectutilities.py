@@ -175,6 +175,10 @@ class FormatOneZero:
 		    Globals.debug("Missing FadePoints in Event XML")
 	    else:
 		    event._Event__fadePointsDict = Utils.load_dictionary_from_xml(xmlPoints)
+		    # cover ground if fade points are None
+		    if event._Event__fadePointsDict is None:
+		        event._Event__fadePointsDict = {}
+
 
 	    if not isDead:
 		    if event.isLoading or event.isRecording:

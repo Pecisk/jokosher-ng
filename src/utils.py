@@ -121,7 +121,7 @@ class Utils():
             parentElement -- block of XML with the parameters.
         """
         for node in parentElement.childNodes:
-            if node.nodeType == xml.dom.Node.ELEMENT_NODE:
+            if node.nodeType == xml.dom.minidom.Node.ELEMENT_NODE:
                 value = cls.load_variable_from_node(node)
                 setattr(obj, node.tagName, value)
                 print(node.tagName, value)
@@ -248,15 +248,16 @@ class Utils():
             a dictionary with the loaded values in (type, value) format.
         """
         dictionary = {}
-
         for node in parentElement.childNodes:
-            if node.nodeType == xml.minidom.Node.ELEMENT_NODE:
+            if node.nodeType == xml.dom.minidom.Node.ELEMENT_NODE:
                 if node.hasAttribute("keytype") and node.hasAttribute("keyvalue"):
                     key = cls.load_variable_from_node(node, "keytype", "keyvalue")
                 else:
                     key = node.tagName
                 value = cls.load_variable_from_node(node, "type", "value")
                 dictionary[key] = value
+
+        return dictionary
 
     @classmethod
     def DbToFloat(cls, f):
@@ -270,3 +271,4 @@ class Utils():
             a float in the [0,1] range.
         """
         return pow(10., f / 20.)
+

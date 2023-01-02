@@ -1,4 +1,4 @@
-from gi.repository import Gtk, Graphene
+from gi.repository import Gtk, Graphene, Gdk
 from .eventviewer import EventViewer
 from .project import Project
 import cairo

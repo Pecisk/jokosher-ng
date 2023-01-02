@@ -631,6 +631,7 @@ class EventViewer(Gtk.DrawingArea):
         print("Clicks " + str(press_count))
         #Don't allow moving, etc while recording!
         if self.event.instrument.project.GetIsRecording():
+            controller.set_state(Gtk.EventSequenceState.CLAIMED)
             return True #don't let the instrument viewer handle this click
 
         # FIXME this doesn't work for now, no key support'
@@ -647,6 +648,7 @@ class EventViewer(Gtk.DrawingArea):
         #Don't allow editing while playing back.
         #It must be here to avoid afecting the selection behavior
         if self.application.isPlaying:
+            controller.set_state(Gtk.EventSequenceState.CLAIMED)
             return True
 
         # RMB: context menu
@@ -679,9 +681,11 @@ class EventViewer(Gtk.DrawingArea):
                     self.isDraggingFade = True
                     if press_x > self.PixXFromSec(self.event.selection[1]) - self._PIXX_FADEMARKER_WIDTH - 1:
                         self.fadeBeingDragged = 1
+                        controller.set_state(Gtk.EventSequenceState.CLAIMED)
                         return True
                     else:
                         self.fadeBeingDragged = 0
+                        controller.set_state(Gtk.EventSequenceState.CLAIMED)
                         return True
 
                 if press_count >= 2:
@@ -690,6 +694,7 @@ class EventViewer(Gtk.DrawingArea):
                     self.mouseAnchor[0] = press_x
                     if self.event.isLoading == False:
                         self.OnSplit(None, press_x)
+                    controller.set_state(Gtk.EventSequenceState.CLAIMED)
                     return True
 
                 # remove any existing selection in this event
@@ -1020,9 +1025,9 @@ class EventViewer(Gtk.DrawingArea):
                     self.event.Move(self.event.start, self.eventStart)
                     return False #need to pass this button release up to RecordingView
             elif self.isDraggingFade:
-                 self.isDraggingFade = False
+                self.isDraggingFade = False
                 # set the audioFadePoints appropriately
-                 self.SetAudioFadePointsFromCurrentSelection()
+                self.SetAudioFadePointsFromCurrentSelection()
             if self.isSelecting:
                 print("SELECTION UP")
                 self.isSelecting = False
@@ -1347,6 +1352,7 @@ class EventViewer(Gtk.DrawingArea):
         volRight = self.fadeMarkers[1] / 100.0
 
         selection = self.event.selection
+        self.event.AddAudioFadePoints(selection[0], selection[1], volLeft, volRight)
 
     #_____________________________________________________________________
 
