@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<interface>
+  <requires lib="gtk" version="4.0"/>
+  <requires lib="Adw" version="1.0"/>
+  <template class="ProjectDialog" parent="GtkBox">
+    <property name="orientation">vertical</property>
+    <property name="vexpand">True</property>
+    <property name="valign">fill</property>
+    <property name="hexpand">True</property>
+    <property name="halign">fill</property>
+    <child>
+      <object class="GtkScrolledWindow">
+        <property name="vexpand">True</property>
+        <property name="valign">fill</property>
+        <property name="hexpand">True</property>
+        <property name="halign">fill</property>
+        <child>
+          <object class="GtkBox" id="scrolled_part">
+            <property name="orientation">vertical</property>
+            <child>
+              <object class="GtkBox" id="main_part">
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel">
+                    <property name="label">Create project</property>
+                    <property name="margin_top">50</property>
+                    <property name="margin_bottom">50</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="project_name">
+                    <property name="placeholder-text">Project name</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="project_author">
+                    <property name="placeholder-text">Project author</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkEntry" id="project_path">
+                    <property name="placeholder-text">/home/peteriskrisjanis</property>
+                  </object>
+                </child>
+                <child>
+                  <object class="GtkButton" id="project_create_button">
+                    <property name="label">Create</property>
+                  </object>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+      </object>
+    </child>
+  </template>
+</interface>

@@ -60,3 +60,7 @@ class Workspace(Gtk.Paned):
     def on_scroll_adjustment_change_instrument_pane(self, adjustment):
         if adjustment.get_property('value') != self.instrument_window_scroll_adjustment.get_property('value'):
             self.instrument_window_scroll_adjustment.set_property('value', adjustment.get_property('value'))
+
+    def destroy(self):
+        self.unparent()
+        self.run_dispose()

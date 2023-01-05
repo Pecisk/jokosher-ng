@@ -99,6 +99,10 @@
         <attribute name="label" translatable="yes">_Save Project</attribute>
         <attribute name="action">app.save-project</attribute>
       </item>
+      <item>
+        <attribute name="label" translatable="yes">_Close Project</attribute>
+        <attribute name="action">app.close-project</attribute>
+      </item>
     </section>
   </menu>
       <menu id="add_menu">

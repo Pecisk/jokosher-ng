@@ -882,7 +882,7 @@ class EventViewer(Gtk.DrawingArea):
                 # Otherwise, stop playing and cut at the play position (if it's over this event)
                 play_pos = self.project.transport.GetPixelPosition(self.event.start)
                 if play_pos > 0 and play_pos < self.get_allocated_width():
-                    self.project.Stop()
+                    self.project.stop()
                     self.OnSplit(None, play_pos)
             return True
         else:

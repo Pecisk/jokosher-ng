@@ -17,3 +17,13 @@ class Scale(Gtk.Box):
 
     def on_scrolling_scale(self, scale, scroll, value):
         self.project.set_scale(value)
+
+    def destroy(self):
+        # cleanup zoom slider
+        self.zoomSlider.disconnect_by_func(self.on_scrolling_scale)
+        self.zoomSlider.unparent()
+        self.zoomSlider.run_dispose()
+
+        # cleanup Scale itself
+        self.unparent()
+        self.run_dispose()

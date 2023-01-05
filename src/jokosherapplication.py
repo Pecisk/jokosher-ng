@@ -11,9 +11,14 @@ from .window import JokosherWindow
 from .project import Project
 from .settings import Settings
 from .globals import Globals
+from .platform_utils import PlatformUtils
 
 class JokosherApplication(Adw.Application):
     """The main application singleton class."""
+
+    __gsignals__ = {
+        "project"     : ( GObject.SIGNAL_RUN_LAST | GObject.SIGNAL_DETAILED, GObject.TYPE_NONE, () ),
+    }
 
     def __init__(self):
         super().__init__(application_id='org.gnome.Jokosher',
@@ -23,9 +28,10 @@ class JokosherApplication(Adw.Application):
         self.create_action('preferences', self.on_preferences_action)
         # initialise project stuff
         self.project = None
-        self.create_action('new-project', self.on_new_project)
-        self.create_action('save-project', self.on_save_project)
-        self.create_action('open-project', self.on_open_project)
+        self.create_action('new-project', self.on_project_new_action)
+        self.create_action('save-project', self.on_project_save_action)
+        self.create_action('open-project', self.on_project_open_action)
+        self.create_action('close-project', self.on_project_close_action)
 
         self.connect("shutdown", self.on_shutdown)
         # TODO initialise settings
@@ -41,6 +47,9 @@ class JokosherApplication(Adw.Application):
         self.instrumentPropertyList = []
         self._alreadyCached = False
         self._cacheGeneratorObject = None
+
+        # indication that we are clearing up for new project
+        self.will_open_project = False
 
         # idle instrument load
         GObject.idle_add(self.idleCacheInstruments)
@@ -98,16 +107,57 @@ class JokosherApplication(Adw.Application):
         if shortcuts:
             self.set_accels_for_action(f"app.{name}", shortcuts)
 
-    def on_new_project(self, widget, _):
-        # TODO new project dialog
-        self.project = Project.create(name='Untitled1', author='Pēteris Krišjānis', location='file:///home/peteriskrisjanis')
-        self.props.active_window.on_open_project()
+    def on_project_new_action(self, widget, _):
+        # check and close if there is already project running
+        if self.project:
+            self.close_project()
 
-    def on_save_project(self, widget, _):
+        # let main window to show create project dialog
+        self.emit("project::dialog")
+
+        # TODO new project dialog
+        #self.project = Project.create(name='Untitled1', author='Pēteris Krišjānis', location='file:///home/peteriskrisjanis')
+        #self.props.active_window.on_open_project()
+
+    def on_project_create(self, dialog, name, author, location):
+        # this is callback from ProjectDialog
+        # double check if project is really closed, should be at this point
+        if self.project:
+            self.close_project()
+        self.project = Project.create(name=name, author=author, location=location)
+        # let everyone know we open new project
+        self.emit("project::open")
+        #self.props.active_window.on_open_project()
+
+    def on_project_save_action(self, widget, _):
         self.project.save_project_file()
 
-    def on_open_project(self, widget, _):
+    def on_project_open_action(self, widget, _):
+        # action for opening file dialog
         self.props.active_window.on_open_project_file()
+
+    def open_project(self, project_file_path):
+        # try:
+        # we need to close project if any
+        if self.project:
+            self.close_project()
+        uri = PlatformUtils.pathname2url(project_file_path)
+        self.set_project(Project.load_project_file(uri))
+        self.emit("project::open")
+        # app.on_project_open()
+        #self.on_project_open()
+        return True
+        # except ProjectManager.OpenProjectError as e:
+        #     self.ShowOpenProjectErrorDialog(e, parent)
+        #     return False
+
+    def on_project_open(self):
+        # method triggered on opening project from open project file dialog
+        # this means project is set already and we are ready to roll
+        pass
+
+    def on_project_close_action(self, widget, _):
+        self.close_project()
 
     def set_project(self, project):
         """
@@ -300,7 +350,7 @@ class JokosherApplication(Adw.Application):
     def on_stop(self):
         self.isPlaying = False
         self.isRecording = False
-        self.project.Stop()
+        self.project.stop()
 
     def on_record(self, widget=None):
         """
@@ -316,7 +366,7 @@ class JokosherApplication(Adw.Application):
         #     return
 
         # if self.isRecording:
-        #     self.project.Stop()
+            #     self.project.Stop()
         #     return
 
         can_record = False
@@ -376,11 +426,12 @@ class JokosherApplication(Adw.Application):
             0 = there was no project open or it was closed succesfully.
             1 = cancel the operation and return to the normal program flow.
         """
-        print("CLOSE PROJECT I")
+
         if not self.project:
             return 0
 
-        #self.project.stop()
+        # stop playing if it is not already done
+        self.project.stop()
 
         """
         if self.project.CheckUnsavedChanges():
@@ -413,13 +464,17 @@ class JokosherApplication(Adw.Application):
 
         # if self.project.CheckUnsavedChanges():
         #     self.OnSaveProject()
-        #     self.project.CloseProject()
+        #     self.project.close_project()
         # elif self.project.newly_created_project:
-        #     self.project.CloseProject()
+        #     self.project.close_project()
         #     ProjectManager.DeleteProjectLocation(self.project)
         # else:
+
+        self.emit("project::close")
         self.project.close_project()
         self.project = None
-        # FIXME where we store mode?
-        # self.mode = None
         return 0
+
+    @staticmethod
+    def get_application():
+        return Gio.Application.get_default()

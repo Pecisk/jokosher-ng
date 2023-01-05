@@ -29,6 +29,7 @@ jokosher_sources = [
   '__init__.py',
   'main.py',
   'window.py',
+  'projectdialog.py',
   'workspace.py',
   'recordingview.py',
   'timelinebar.py',

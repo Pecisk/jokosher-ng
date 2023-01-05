@@ -24,6 +24,7 @@ from .platform_utils import PlatformUtils
 from .project import Project
 from .addinstrumentdialog import AddInstrumentDialog
 from .scale import Scale
+from .projectdialog import ProjectDialog
 
 @Gtk.Template(resource_path='/org/gnome/Jokosher/window.ui')
 class JokosherWindow(Adw.ApplicationWindow):
@@ -65,6 +66,18 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.key_controller = Gtk.EventControllerKey.new()
         self.add_controller(self.key_controller)
         self.key_controller.connect("key-pressed", self.on_key_press)
+
+        # FIXME we need setting for either open latest project or give project list
+        self.project_dialog = ProjectDialog()
+        self.general_box.append(self.project_dialog)
+        self.project_dialog.props.hexpand = True
+        self.project_dialog.props.halign = Gtk.Align.FILL
+        self.project_dialog.props.vexpand = True
+        self.project_dialog.props.valign = Gtk.Align.FILL
+
+        self.app.connect("project::open", self.on_project_open)
+        self.app.connect("project::close", self.on_project_close)
+        self.app.connect("project::dialog", self.on_project_dialog)
 
     def on_key_press(self, controller, keyval, keycode, state):
         key = Gdk.keyval_name(keyval)
@@ -110,9 +123,11 @@ class JokosherWindow(Adw.ApplicationWindow):
         add_instrument_dialog.show()
         #self.project.add_instrument("None", "None")
 
-    def on_open_project(self):
-        # FIXME set sensitivity where it needs to be
-        # enable widgets we want to be active when project is open
+    def on_project_open(self, application):
+        # if project dialog is still shown, remove it, we are opening from menu
+        if self.project_dialog:
+            self.project_dialog.destroy()
+        # set everything up
         self.play_button.set_sensitive(True);
         self.stop_button.set_sensitive(True);
         self.record_button.set_sensitive(True);
@@ -129,6 +144,25 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.top_box.hide()
         self.workspace = Workspace()
         self.general_box.append(self.workspace)
+
+
+    def on_project_close(self, application):
+        # cleanup crew
+        self.workspace.destroy()
+        self.scale.destroy()
+        # top box is just Box so unparent and dispose
+        self.top_box.unparent()
+        self.top_box.run_dispose()
+
+        # if application doesn't expect new project
+
+    def on_project_dialog(self, application):
+        self.project_dialog = ProjectDialog()
+        self.general_box.append(self.project_dialog)
+        self.project_dialog.props.hexpand = True
+        self.project_dialog.props.halign = Gtk.Align.FILL
+        self.project_dialog.props.vexpand = True
+        self.project_dialog.props.valign = Gtk.Align.FILL
 
     def do_add_audio(self, widget, _):
         #buttons = (Gtk.ResponseType.CANCEL, Gtk.ResponseType.OK)
@@ -164,19 +198,8 @@ class JokosherWindow(Adw.ApplicationWindow):
         if response == Gtk.ResponseType.OK:
             project_file = dialog.get_file()
             if project_file:
-                self.open_project(project_file.get_path())
+                self.props.application.open_project(project_file.get_path())
         dialog.destroy()
-
-    def open_project(self, project_file_path):
-        # try:
-        uri = PlatformUtils.pathname2url(project_file_path)
-        app = self.get_property('application')
-        app.set_project(Project.load_project_file(uri))
-        self.on_open_project()
-        return True
-        # except ProjectManager.OpenProjectError as e:
-        #     self.ShowOpenProjectErrorDialog(e, parent)
-        #     return False
 
     def on_delete(self, widget=None):
         """

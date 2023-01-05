@@ -144,7 +144,7 @@ class Project(GObject.GObject):
         self.bus = self.mainpipeline.get_bus()
         self.bus.add_signal_watch()
         self.Mhandler = self.bus.connect("message::element", self.__PipelineBusLevelCb)
-        self.EOShandler = self.bus.connect("message::eos", self.Stop)
+        self.EOShandler = self.bus.connect("message::eos", self.stop)
         self.Errorhandler = self.bus.connect("message::error", self.__PipelineBusErrorCb)
 
         #initialize the transport mode
@@ -644,7 +644,7 @@ class Project(GObject.GObject):
 
     #_____________________________________________________________________
 
-    def Stop(self, bus=None, message=None):
+    def stop(self, bus=None, message=None):
         """
         Stop playback or recording
 
@@ -1062,7 +1062,6 @@ class Project(GObject.GObject):
         """
         Closes down this Project.
         """
-        print("CLOSE PROJECT II")
 
         # when closing the file, the user chooses to either save, or discard
         # in either case, we don't need the incremental save file anymore
@@ -1073,7 +1072,7 @@ class Project(GObject.GObject):
         #         os.remove(filename)
         # except OSError:
         #     Globals.debug("Removal of .incremental failed! Next load we will try to restore unrestorable state!")
-        print(self.deleteOnCloseAudioFiles)
+
         for file in self.deleteOnCloseAudioFiles:
             if os.path.exists(file):
                 Globals.debug("Deleting copied audio file:", file)
