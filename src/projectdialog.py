@@ -16,9 +16,17 @@ class ProjectDialog(Gtk.Box):
 
     def __init__(self):
         Gtk.Box.__init__(self)
+        # application grab
         self.application = Gio.Application.get_default()
+
+        # connect signals
         self.project_create_button.connect("clicked", self.on_project_create)
+        # hit creating flow trough signal
         self.connect("create", self.application.on_project_create)
+
+        # set home directory as default for now
+        # FIXME sensible default and remembering last path
+        self.project_path.props.text = self.application.settings.JOKOSHER_USER_HOME
         # self.props.orientation = Gtk.Orientation.VERTICAL
         # self.scrolled_window = Gtk.ScrolledWindow()
         # self.append(self.scrolled_window)

@@ -101,6 +101,7 @@ class Settings:
 
         self.JOKOSHER_CONFIG_HOME = GLib.get_user_config_dir()
         self.JOKOSHER_DATA_HOME =   GLib.get_user_data_dir()
+        self.JOKOSHER_USER_HOME = GLib.get_home_dir()
 
         data_path = os.getenv("JOKOSHER_DATA_PATH")
         if data_path:

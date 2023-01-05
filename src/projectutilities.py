@@ -120,16 +120,16 @@ class FormatOneZero:
 
         # FIXME
 		#load image from file based on unique type
-		# instr.pixbuf = Globals.getCachedInstrumentPixbuf(instr.instrType)
-		# if not instr.pixbuf:
-		# 	Globals.debug("Error, could not load image:", instr.instrType)
+		instr.pixbuf = Instrument.getCachedInstrumentPixbuf(instr.instrType)
+		if not instr.pixbuf:
+		    Globals.debug("Error, could not load image:", instr.instrType)
 
 		# load pan level
-		#instr.panElement.set_property("panorama", instr.pan)
+		instr.panElement.set_property("panorama", instr.pan)
 		#check if instrument is muted and setup accordingly
-		# instr.OnMute()
+		instr.OnMute()
 		#update the volume element with the newly loaded value
-		# instr.UpdateVolume()
+		instr.UpdateVolume()
 
 	#_____________________________________________________________________
 
@@ -191,7 +191,7 @@ class FormatOneZero:
 				    Globals.debug("Cannot load levels from file", levels_path)
 			    if not event.levels_list:
 				    event.GenerateWaveform()
-		    # event._Event__UpdateAudioFadePoints()
+		    event._Event__UpdateAudioFadePoints()
 		    event.CreateFilesource()
 
 class ProjectUtilities:
