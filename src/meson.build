@@ -56,6 +56,7 @@ jokosher_sources = [
   'scale.py',
   'audiobackend.py',
   'jokosherapplication.py',
+  'jokosherpreferences.py',
   'jokosher.css',
 ]
 

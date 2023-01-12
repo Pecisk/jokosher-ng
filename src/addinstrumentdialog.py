@@ -235,9 +235,3 @@ class AddInstrumentDialog(Gtk.Window):
         Globals.settings.general["addinstrumentwindowwidth"] = self.width
         Globals.settings.general["addinstrumentwindowheight"] = self.height
         Globals.settings.write()
-
-    #_____________________________________________________________________
-
-
-
-#=========================================================================

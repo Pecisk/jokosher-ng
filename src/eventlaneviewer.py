@@ -120,7 +120,7 @@ class EventLaneViewer(Gtk.Box):
              self.project.clear_event_selections()
              self.project.select_instrument(self.instrument)
 
-        controller.set_state(Gtk.EventSequenceState.CLAIMED)
+        #controller.set_state(Gtk.EventSequenceState.CLAIMED)
         return True
 
     def on_mouse_move(self, controller, x, y):
@@ -232,3 +232,14 @@ class EventLaneViewer(Gtk.Box):
             event_viewer.destroy()
         self.unparent()
         self.run_dispose()
+
+    def RemoveDrawer(self, drawer):
+        """
+        Removes the drawer from below in the event. This function does
+        nothing if the given drawer is not currenly shown.
+
+        Parameters:
+            drawer -- the widget to remove.
+        """
+        if drawer.get_parent() == self.fixed:
+            self.fixed.remove(drawer)

@@ -99,8 +99,13 @@ class Settings:
         use paths relative to the current running directory instead of /usr ones.
         """
 
-        self.JOKOSHER_CONFIG_HOME = GLib.get_user_config_dir()
-        self.JOKOSHER_DATA_HOME =   GLib.get_user_data_dir()
+        self.RESOURCE_NAME = 'jokosher'
+        self.JOKOSHER_CONFIG_HOME = os.path.join(GLib.get_user_config_dir(), self.RESOURCE_NAME)
+        if not os.path.isdir(self.JOKOSHER_CONFIG_HOME):
+            os.makedirs(self.JOKOSHER_CONFIG_HOME)
+        self.JOKOSHER_DATA_HOME = os.path.join(GLib.get_user_data_dir(), self.RESOURCE_NAME)
+        if not os.path.isdir(self.JOKOSHER_DATA_HOME):
+            os.makedirs(self.JOKOSHER_DATA_HOME)
         self.JOKOSHER_USER_HOME = GLib.get_home_dir()
 
         data_path = os.getenv("JOKOSHER_DATA_PATH")
@@ -132,7 +137,7 @@ class Settings:
         jokosher_dir_empty = (len(os.listdir(self.JOKOSHER_DATA_HOME)) == 0)
         self._HOME_DOT_JOKOSHER = os.path.expanduser("~/.jokosher")
 
-        if jokosher_dir_empty and os.path.isdir(_HOME_DOT_JOKOSHER):
+        if jokosher_dir_empty and os.path.isdir(self._HOME_DOT_JOKOSHER):
             # Copying old config file from ~/.jokosher.
             CopyAllFiles(self._HOME_DOT_JOKOSHER, self.JOKOSHER_CONFIG_HOME, ["config"])
 

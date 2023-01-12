@@ -380,17 +380,17 @@ class Event(GObject.GObject):
             e = Event(self.instrument, self.file)
         e.name = self.name
 
-        # dictLeft = {}
-        # dictRight = {}
-        # for key, value in self.__fadePointsDict.iteritems():
-        #     if key < split_point:
-        #         dictLeft[key] = value
-        #     if key > split_point:
-        #         dictRight[key - split_point] = value
+        dictLeft = {}
+        dictRight = {}
+        for key, value in self.__fadePointsDict.items():
+            if key < split_point:
+                dictLeft[key] = value
+            if key > split_point:
+                dictRight[key - split_point] = value
         #in case there is a fade passing through the split point, recreate half of it on either side
-        # splitFadeLevel = self.GetFadeLevelAtPoint(split_point)
-        # dictLeft[split_point] = splitFadeLevel
-        # dictRight[0.0] = splitFadeLevel
+        splitFadeLevel = self.GetFadeLevelAtPoint(split_point)
+        dictLeft[split_point] = splitFadeLevel
+        dictRight[0.0] = splitFadeLevel
 
         if cutRightSide:
             e.start = self.start + split_point
@@ -402,8 +402,8 @@ class Event(GObject.GObject):
             e.levels_list = self.levels_list.slice_by_endtime(millis)
             self.levels_list = self.levels_list.slice_by_endtime(0, millis)
 
-            # self.__fadePointsDict = dictLeft
-            # e.__fadePointsDict = dictRight
+            self.__fadePointsDict = dictLeft
+            e.__fadePointsDict = dictRight
         else:
             e.start = self.start
             e.offset = self.offset
@@ -417,11 +417,11 @@ class Event(GObject.GObject):
             e.levels_list = self.levels_list.slice_by_endtime(0, millis)
             self.levels_list = self.levels_list.slice_by_endtime(millis)
 
-            # self.__fadePointsDict = dictRight
-            # e.__fadePointsDict = dictLeft
+            self.__fadePointsDict = dictRight
+            e.__fadePointsDict = dictLeft
 
-        # self.__UpdateAudioFadePoints()
-        # e.__UpdateAudioFadePoints()
+        self.__UpdateAudioFadePoints()
+        e.__UpdateAudioFadePoints()
         e.SetProperties()
         self.instrument.events.append(e)
         self.SetProperties()
@@ -430,8 +430,8 @@ class Event(GObject.GObject):
         self.instrument.emit("event::added", e)
 
         #undo parameters
-        self.temp = e.id
-        self.temp2 = cutRightSide
+        #self.temp = e.id
+        #self.temp2 = cutRightSide
 
         return e
 
@@ -510,20 +510,20 @@ class Event(GObject.GObject):
             #both points must not be right at the edges, or there is nothing to split
             return
 
-        undoAction = self.instrument.project.NewAtomicUndoAction()
+        #undoAction = self.instrument.project.NewAtomicUndoAction()
 
         if 0 < start_split < self.duration:
             # Split off the left section of the event
-            leftSplit = self.SplitEvent(start_split, False, _undoAction_=undoAction)
-            self.instrument.DeleteEvent(leftSplit.id, _undoAction_=undoAction)
+            leftSplit = self.SplitEvent(start_split, False) #, _undoAction_=undoAction)
+            self.instrument.DeleteEvent(leftSplit.id) #, _undoAction_=undoAction)
 
         #Adjust the end_split value since splitting the left has changed self.duration
         end_split = end_split - start_split
 
         if 0 < end_split < self.duration:
             # Split off the right section of the event
-            rightSplit = self.SplitEvent(end_split, _undoAction_=undoAction)
-            self.instrument.DeleteEvent(rightSplit.id, _undoAction_=undoAction)
+            rightSplit = self.SplitEvent(end_split) #, _undoAction_=undoAction)
+            self.instrument.DeleteEvent(rightSplit.id) #, _undoAction_=undoAction)
 
         self.SetProperties()
         self.emit("length")
@@ -1214,7 +1214,7 @@ class Event(GObject.GObject):
 
         #we can assume that audioFadePoints is sorted and has at least 2 elements
         points = self.audioFadePoints
-        for i in xrange(1, len(points)):
+        for i in range(1, len(points)):
             if points[i][0] >= time:
                 right = points[i]
                 left = points[i-1]

@@ -12,6 +12,7 @@ from .project import Project
 from .settings import Settings
 from .globals import Globals
 from .platform_utils import PlatformUtils
+from .jokosherpreferences import JokosherPreferences
 
 class JokosherApplication(Adw.Application):
     """The main application singleton class."""
@@ -89,8 +90,8 @@ class JokosherApplication(Adw.Application):
         about.present()
 
     def on_preferences_action(self, widget, _):
-        """Callback for the app.preferences action."""
-        print('app.preferences action activated')
+        self.preferences_window = JokosherPreferences()
+        self.preferences_window.show()
 
     def create_action(self, name, callback, shortcuts=None):
         """Add an application action.

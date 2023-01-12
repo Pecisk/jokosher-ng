@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schemalist gettext-domain="jokosher">
 	<schema id="org.gnome.Jokosher" path="/org/gnome/Jokosher/">
+	  <key type="b" name="show-project-dialog">
+      <default>true</default>
+      <summary>Show project dialog</summary>
+      <description>Show project dialog when opening application.</description>
+    </key>
 	</schema>
 </schemalist>

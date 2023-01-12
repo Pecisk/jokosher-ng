@@ -135,25 +135,25 @@ class EventViewer(Gtk.DrawingArea):
         self.drawer = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         trimButton = Gtk.Button()
         trimimg = Gtk.Image.new_from_file(os.path.join(self.settings.IMAGE_PATH, "icon_trim.png"))
-        # trimimg.set_from_file(os.path.join(Globals.IMAGE_PATH, "icon_trim.png"))
         trimButton.set_child(trimimg)
         trimButton.set_tooltip_text(_("Trim"))
         self.drawer.append(trimButton)
-        # trimButton.connect("clicked", self.TrimToSelection)
+        trimButton.connect("clicked", self.trim_to_selection)
 
         delFPButton = Gtk.Button()
         delimg = Gtk.Image.new_from_file(os.path.join(self.settings.IMAGE_PATH, "icon_fpdelete.png"))
         delFPButton.set_child(delimg)
         self.drawer.append(delFPButton)
-        # delFPButton.connect("clicked", self.DeleteSelectedFadePoints)
+        delFPButton.connect("clicked", self.delete_selected_fade_points)
         delFPButton.set_tooltip_text(_("Delete Fade Points"))
 
         snapFPButton = Gtk.Button()
         snapimg = Gtk.Image.new_from_file(os.path.join(self.settings.IMAGE_PATH, "icon_fpsnap.png"))
         snapFPButton.set_child(snapimg)
         self.drawer.append(snapFPButton)
-        # snapFPButton.connect("clicked", self.SnapSelectionToFadePoints)
+        snapFPButton.connect("clicked", self.snap_selection_to_fade_points)
         snapFPButton.set_tooltip_text(_("Snap To Fade Points"))
+        self.snappy = snapFPButton
 
         self.drawer.set_sensitive(not self.event.isLoading)
         self.drawer.show()
@@ -1153,25 +1153,6 @@ class EventViewer(Gtk.DrawingArea):
             self.HideDrawer()
         else:
             self.event.Delete()
-
-    #_____________________________________________________________________
-
-    def TrimToSelection(self, gtkevent):
-        """
-        Cut this Event down so only the selected bit remains. This Event
-        is L-S-R, where S is the selected bit; L and R will be removed.
-
-        Parameters:
-            gtkevent -- reserved for GTK callbacks, don't use it explicitly.
-        """
-        if self.event.isLoading == True:
-            return
-
-        self.HideDrawer()
-
-        self.event.Trim(self.event.selection[0], self.event.selection[1])
-        self.event.selection = [0,0]
-
     #_____________________________________________________________________
 
     def HideDrawer(self):
@@ -1228,7 +1209,7 @@ class EventViewer(Gtk.DrawingArea):
         """
         Callback function for when the loading status of the event changes.
         """
-        #self.drawer.set_sensitive(not self.event.isLoading)
+        self.drawer.set_sensitive(not self.event.isLoading)
         self.queue_draw()
 
     #_____________________________________________________________________
@@ -1401,17 +1382,18 @@ class EventViewer(Gtk.DrawingArea):
             x = int(self.PixXFromSec(selection[1]) - width)
 
         self.lane.PutDrawer(self.drawer, eventx + x)
+        #self.snappy.connect("clicked", self.snap_selection_to_fade_points)
         # FIXME
         #don't update the lane because it calls us and that might cause infinite loop
 
     #_____________________________________________________________________
 
-    def DeleteSelectedFadePoints(self, event):
+    def delete_selected_fade_points(self, button):
         """
         Deletes the selected fade points from the Event.
 
         Parameters:
-            event -- reserved for GTK callbacks, don't use it explicitly.
+            event -- button widget whose clicked signal is triggered
         """
         if self.event.isLoading == True:
             return
@@ -1419,13 +1401,14 @@ class EventViewer(Gtk.DrawingArea):
 
     #_____________________________________________________________________
 
-    def SnapSelectionToFadePoints(self, event):
+    def snap_selection_to_fade_points(self, button):
         """
         Snaps the selection to a set of fade points.
 
         Parameters:
-            event -- reserved for GTK callbacks, don't use it explicitly.
+            button - button widget which clicked signal is triggered
         """
+        print("SNAP SNAP SNAP SNAP")
         if len(self.event.audioFadePoints) < 2:
             #not enough levels
             return
@@ -1498,7 +1481,21 @@ class EventViewer(Gtk.DrawingArea):
         Called when the a fade point's value changes, to update the graphical
         marker over the waveform.
         """
-        return
         # FIXME fade points
-        # self.fadeMarkers = [self.event.GetFadeLevelAtPoint(x) * 100 for x in self.event.selection]
+        self.fadeMarkers = [self.event.GetFadeLevelAtPoint(x) * 100 for x in self.event.selection]
 
+    def trim_to_selection(self, button):
+        """
+        Cut this Event down so only the selected bit remains. This Event
+        is L-S-R, where S is the selected bit; L and R will be removed.
+
+        Parameters:
+            button -- button widget triggering trim to selection operation from drawer
+        """
+        if self.event.isLoading == True:
+            return
+
+        self.HideDrawer()
+
+        self.event.Trim(self.event.selection[0], self.event.selection[1])
+        self.event.selection = [0,0]
