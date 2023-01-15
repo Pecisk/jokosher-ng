@@ -5,7 +5,6 @@ import errno
 import locale
 from configparser import ConfigParser, RawConfigParser
 from gi.repository import GLib, Gio
-from .jokosherapplication import JokosherApplication
 
 """ Categories enum """
 class Categories:
@@ -500,27 +499,22 @@ class Settings:
     def get_audio_source(self):
         return self.recording["audiosrc"]
 
-    def get_recording_file_extension():
+    def get_recording_file_extension(self):
         return self.recording["file_extension"]
 
-    def get_sample_rate():
-        # FIXME differentiate between project and default
-        project = JokosherApplication.get_application().project
-        if project:
-            return project.sample_rate
-        else:
-            return self.gsettings.get_int('sample-rate').unpack()
+    def get_sample_rate(self):
+        return self.gsettings.get_int('sample-rate')
 
-    def get_bit_rate():
-        return self.recording["bitrate"]
+    def get_bit_depth(self):
+        return self.gsettings.get_string('bit-depth')
 
-    def get_recording_audio_encoding():
+    def get_recording_audio_encoding(self):
         return self.recording["fileformat"]
 
-    def get_playback_sink():
+    def get_playback_sink(self):
         return self.playback["audiosink"]
 
-    def get_playback_device():
+    def get_playback_device(self):
         return self.playback["device"]
 
     @staticmethod

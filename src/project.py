@@ -78,7 +78,7 @@ class Project(GObject.GObject):
         # populate these from default settings unless loaded from file
         # FIXME ensure these are used when recording and for playback
         self.sample_rate = Settings.get_settings().get_sample_rate() # digital audio samples per second
-        self.bit_rate = Settings.get_settings().get_bit_rate() # bits used to store information about digital audio sample
+        self.bit_depth = Settings.get_settings().get_bit_depth() # bits used to store information about digital audio sample
 
         # Variables for the undo/redo command system
         self.__unsavedChanges = False    #This boolean is to indicate if something which is not on the undo/redo stack needs to be saved
@@ -276,7 +276,7 @@ class Project(GObject.GObject):
         head.appendChild(params)
 
         items = ["view_scale", "view_start", "name", "name_is_unset", "author", "volume",
-                 "transportMode", "bpm", "meter_nom", "meter_denom", "projectfile", "sample_rate", "bit_rate"]
+                 "transportMode", "bpm", "meter_nom", "meter_denom", "projectfile", "sample_rate", "bit_depth"]
 
         Utils.store_parameters_to_xml(self, doc, params, items)
 
@@ -947,20 +947,21 @@ class Project(GObject.GObject):
                 encodeString = Settings.get_settings().get_recording_audio_encoding()
                 recordString = Settings.get_settings().get_audio_source()
 
+                # FIXME As we won't allow to set bitrate for recording - is this still relevant?
                 # 0 means this encoder doesn't take a bitrate
-                if Settings.get_settings().get_bit_rate() > 0:
-                    encodeString %= {'bitrate' : int(Settings.get_settings().get_bit_rate())}
+                # if self.bit_rate > 0:
+                #     encodeString %= {'bitrate' : int(sel)}
 
-                sampleRate = 0
-                try:
-                    sampleRate = int(Settings.get_settings().get_sample() )
-                except ValueError:
-                    pass
+                # sampleRate = 0
+                # try:
+                #     sampleRate = int(self.sample_rate)
+                # except ValueError:
+                #     pass
                 # 0 means "autodetect", or more technically "don't use any caps".
-                if sampleRate > 0:
-                    capsString = "audio/x-raw,format=S32LE,rate=%s ! audioconvert" % sampleRate
-                else:
-                    capsString = "audioconvert"
+                #if sampleRate > 0:
+                capsString = "audio/x-raw,format={bit_depth},rate={sample_rate} ! audioconvert".format(bit_depth=self.bit_depth, sample_rate=self.sample_rate)
+                # else:
+                #     capsString = "audioconvert"
 
                 # TODO: get rid of this entire string; do it manually
                 pipe = "%s ! %s ! level name=recordlevel ! audioconvert ! %s ! filesink name=sink"

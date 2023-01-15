@@ -11,5 +11,15 @@
 	    <summary>Audio system</summary>
 	    <description>Audio system to use for playback and recording.</description>
 	  </key>
+	  <key type="i" name="sample-rate">
+	    <default>48000</default>
+	    <summary>Default sample rate</summary>
+	    <description>Default sample rate for recording audio.</description>
+	  </key>
+	  <key type="s" name="bit-depth">
+	    <default>"F32LE"</default>
+	    <summary>Default bit depth</summary>
+	    <description>Default bit depth for recording audio.</description>
+	  </key>
 	</schema>
 </schemalist>
