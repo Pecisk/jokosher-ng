@@ -75,6 +75,11 @@ class Project(GObject.GObject):
         self.hasDoneIncrementalSave = False    # True if we have already written to the .incremental file from this project.
         self.isDoingIncrementalRestore = False # If we are currently restoring incremental save actions
 
+        # populate these from default settings unless loaded from file
+        # FIXME ensure these are used when recording and for playback
+        self.sample_rate = Settings.get_settings().get_sample_rate() # digital audio samples per second
+        self.bit_rate = Settings.get_settings().get_bit_rate() # bits used to store information about digital audio sample
+
         # Variables for the undo/redo command system
         self.__unsavedChanges = False    #This boolean is to indicate if something which is not on the undo/redo stack needs to be saved
         self.__undoStack = []            #not yet saved undo commands
@@ -271,7 +276,7 @@ class Project(GObject.GObject):
         head.appendChild(params)
 
         items = ["view_scale", "view_start", "name", "name_is_unset", "author", "volume",
-                 "transportMode", "bpm", "meter_nom", "meter_denom", "projectfile"]
+                 "transportMode", "bpm", "meter_nom", "meter_denom", "projectfile", "sample_rate", "bit_rate"]
 
         Utils.store_parameters_to_xml(self, doc, params, items)
 
@@ -503,7 +508,7 @@ class Project(GObject.GObject):
             the newly created GStreamer sink element.
         """
 
-        sinkString = Settings.playback["audiosink"]
+        sinkString = Settings.get_settings().get_playback_sink()
         if self.currentSinkString == sinkString:
             return self.masterSink
 
@@ -526,7 +531,7 @@ class Project(GObject.GObject):
             iteratorAnswer, sinkElement = sinkElements.next()
 
             if hasattr(sinkElement.props, "device"):
-                outdevice = Settings.playback["device"]
+                outdevice = Settings.get_settings().get_playback_device()
                 Globals.debug("Output device: %s" % outdevice)
                 sinkElement.set_property("device", outdevice)
 
@@ -893,7 +898,7 @@ class Project(GObject.GObject):
                 #Need multiple recording bins with unique names when we're
                 #recording from multiple devices
                 recordingbin = Gst.Bin("recordingbin_%d" % recbin)
-                recordString = Settings.recording["audiosrc"]
+                recordString = Settings.get_settings().get_audio_source()
                 srcBin = Gst.parse_bin_from_description(recordString, True)
                 try:
                     src_element = srcBin.iterate_sources().next()
@@ -905,9 +910,8 @@ class Project(GObject.GObject):
 
                 caps = Gst.caps_from_string("audio/x-raw")
 
-                sampleRate = Settings.recording["samplerate"]
                 try:
-                    sampleRate = int(sampleRate)
+                    sampleRate = int(self.sample_rate)
                 except ValueError:
                     sampleRate = 0
                 # 0 means for "autodetect", or more technically "don't use any rate caps".
@@ -940,16 +944,16 @@ class Project(GObject.GObject):
                 instr = recInstruments[0]
                 event = instr.GetRecordingEvent()
 
-                encodeString = Settings.recording["fileformat"]
-                recordString = Settings.recording["audiosrc"]
+                encodeString = Settings.get_settings().get_recording_audio_encoding()
+                recordString = Settings.get_settings().get_audio_source()
 
                 # 0 means this encoder doesn't take a bitrate
-                if Settings.recording["bitrate"] > 0:
-                    encodeString %= {'bitrate' : int(Settings.recording["bitrate"])}
+                if Settings.get_settings().get_bit_rate() > 0:
+                    encodeString %= {'bitrate' : int(Settings.get_settings().get_bit_rate())}
 
                 sampleRate = 0
                 try:
-                    sampleRate = int(Settings.recording["samplerate"] )
+                    sampleRate = int(Settings.get_settings().get_sample() )
                 except ValueError:
                     pass
                 # 0 means "autodetect", or more technically "don't use any caps".

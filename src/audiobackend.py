@@ -24,8 +24,7 @@ class AudioBackend:
     def ListPlaybackDevices(sink=None, probe_name=True):
         if not sink:
             # get preference from Globals
-            sink = Settings.playback["audiosink"]
-
+            sink = Settings.get_settings().get_playback_sink()
         try:
             bin = Gst.parse_bin_from_description(sink, False)
         except (GObject.GError, Gst.ElementNotFoundError):
@@ -46,7 +45,7 @@ class AudioBackend:
     def ListCaptureDevices(src=None, probe_name=True):
         if not src:
             # get preference from Globals
-            src = Settings.recording["audiosrc"]
+            src = Settings.get_settings().get_audio_source()
         try:
             bin = Gst.parse_bin_from_description(src, False)
         except (GObject.GError, Gst.ElementNotFoundError):
@@ -127,7 +126,7 @@ class AudioBackend:
             3) a list of ints representing all the supported sample rates.
         """
 
-        src = Settings.recording["audiosrc"]
+        src = Settings.get_settings().get_audio_source()
         try:
             bin = Gst.parse_bin_from_description(src, False)
         except (GObject.GError, Gst.ParseError.NO_SUCH_ELEMENT):
@@ -172,7 +171,7 @@ class AudioBackend:
         Returns:
             the number of channels available on a device.
         """
-        src_desc = Settings.recording["audiosrc"]
+        src_desc = Settings.get_settings().get_audio_source()
         try:
             bin = Gst.parse_bin_from_description(src_desc, True)
         except (GObject.GError, Gst.ParseError.NO_SUCH_ELEMENT):

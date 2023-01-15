@@ -5,6 +5,7 @@ import errno
 import locale
 from configparser import ConfigParser, RawConfigParser
 from gi.repository import GLib, Gio
+from .jokosherapplication import JokosherApplication
 
 """ Categories enum """
 class Categories:
@@ -91,6 +92,8 @@ class Settings:
             False -- Jokosher has been installed system-wide. Use yelp's automatic
                     help file selection.
         """
+        # init gsettings
+        self.gsettings = Gio.Settings("org.gnome.Jokosher")
         self.USE_LOCAL_HELP = False
 
         """
@@ -453,10 +456,10 @@ class Settings:
         # environment variable for pulseaudio type
         os.environ["PULSE_PROP_media.role"] = "production"
 
-        self.filename = os.path.join(self.JOKOSHER_CONFIG_HOME, "config")
+        # FIXME if found old configuration, save settings to Gsettings?
+        # self.filename = os.path.join(self.JOKOSHER_CONFIG_HOME, "config")
         # Use RawConfigParser so that parameters in pipelines don't get processed
-        self.config = RawConfigParser()
-        self.read()
+        # self.config = RawConfigParser()
 
     #_____________________________________________________________________
 
@@ -493,6 +496,32 @@ class Settings:
         file.close()
 
         #_____________________________________________________________________
+
+    def get_audio_source(self):
+        return self.recording["audiosrc"]
+
+    def get_recording_file_extension():
+        return self.recording["file_extension"]
+
+    def get_sample_rate():
+        # FIXME differentiate between project and default
+        project = JokosherApplication.get_application().project
+        if project:
+            return project.sample_rate
+        else:
+            return self.gsettings.get_int('sample-rate').unpack()
+
+    def get_bit_rate():
+        return self.recording["bitrate"]
+
+    def get_recording_audio_encoding():
+        return self.recording["fileformat"]
+
+    def get_playback_sink():
+        return self.playback["audiosink"]
+
+    def get_playback_device():
+        return self.playback["device"]
 
     @staticmethod
     def get_settings():

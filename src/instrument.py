@@ -597,7 +597,7 @@ class Instrument(GObject.GObject):
         # event.name = _("Recorded audio")
         event.name = "Recorded audio"
 
-        ext = Settings.recording["file_extension"]
+        ext = Settings.get_settings().get_recording_file_extension()
         filename = "%s_%d.%s" % (Globals.FAT32SafeFilename(self.name), event.id, ext)
         event.file = filename
         event.levels_file = filename + Event.LEVELS_FILE_EXTENSION

@@ -6,5 +6,10 @@
       <summary>Show project dialog</summary>
       <description>Show project dialog when opening application.</description>
     </key>
+	  <key type="i" name="audio-system">
+	    <default>0</default>
+	    <summary>Audio system</summary>
+	    <description>Audio system to use for playback and recording.</description>
+	  </key>
 	</schema>
 </schemalist>
