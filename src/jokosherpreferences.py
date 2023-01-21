@@ -1,5 +1,6 @@
 from gi.repository import Adw, Gtk, Gio
 from enum import Enum, unique
+from .jokosherenums import BitDepthFormats, SampleRates
 
 class JokosherPreferences(Adw.PreferencesWindow):
     def __init__(self):
@@ -74,7 +75,12 @@ class JokosherPreferences(Adw.PreferencesWindow):
         self.default_bit_depth = Adw.ComboRow.new()
         self.default_bit_depth.set_title("Audio bit depth")
         self.default_bit_depth.set_subtitle("Number of bits taken to store each sample")
-        self.default_bit_depth.set_model(Gtk.StringList.new(['signed 8 bit', 'signed 16 bit', 'float 32 bit']));
+        translated_bit_depths = {
+            BitDepthFormats.S8: 'signed 8 bit',
+            BitDepthFormats.S16LE: 'signed 16 bit',
+            BitDepthFormats.F32LE: 'float 32 bit',
+        }
+        self.default_bit_depth.set_model(Gtk.StringList.new(list(translated_bit_depths.values())))
         self.default_bit_depth.set_selected(self.default_bit_depth_selected())
         self.default_bit_depth.connect("notify::selected", self.on_default_bit_depth_selected)
         self.audio_default_settings.add(self.default_bit_depth)
@@ -84,11 +90,11 @@ class JokosherPreferences(Adw.PreferencesWindow):
         self.settings.set_int('audio-system', selected_value)
 
     def default_bit_depth_selected(self):
-        return BitRates[self.settings.get_string('bit-depth')].value
+        return BitDepthFormats[self.settings.get_string('bit-depth')].value
 
     def on_default_bit_depth_selected(self, widget, paramspec):
         selected_value = widget.props.selected
-        self.settings.set_string('bit-depth', BitRates(selected_value).name)
+        self.settings.set_string('bit-depth', BitDepthFormats(selected_value).name)
 
     def default_sample_rate_selected(self):
         sample_rates = {'44100': 0, '48000': 1, '96000': 2}
@@ -98,10 +104,4 @@ class JokosherPreferences(Adw.PreferencesWindow):
         sample_rates = [44100, 48000, 96000]
         selected_value = widget.props.selected
         self.settings.set_int('sample-rate', sample_rates[selected_value])
-
-@unique
-class BitRates(Enum):
-    S8 = 0
-    S16LE = 1
-    F32LE = 2
 

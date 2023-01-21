@@ -1,4 +1,5 @@
 from gi.repository import Gtk, Adw, GObject, Gio
+from .jokosherenums import BitDepthFormats, SampleRates
 
 @Gtk.Template(resource_path='/org/gnome/Jokosher/gtk/projectdialog.ui')
 class ProjectDialog(Gtk.Box):
@@ -6,13 +7,15 @@ class ProjectDialog(Gtk.Box):
     __gtype_name__ = "ProjectDialog"
 
     __gsignals__ = {
-        "create"     : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING) ),
+        "create"     : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT) ),
     }
 
     project_name = Gtk.Template.Child()
     project_author = Gtk.Template.Child()
     project_path = Gtk.Template.Child()
     project_create_button = Gtk.Template.Child()
+    project_sample_rate = Gtk.Template.Child()
+    project_bit_depth = Gtk.Template.Child()
 
     def __init__(self):
         Gtk.Box.__init__(self)
@@ -75,9 +78,29 @@ class ProjectDialog(Gtk.Box):
         # self.project_list_clamp.set_child(self.project_list)
         # self.main_part.append(self.project_list_clamp)
 
+        translated_bit_depths = {
+            BitDepthFormats.S8: 'signed 8 bit',
+            BitDepthFormats.S16LE: 'signed 16 bit',
+            BitDepthFormats.F32LE: 'float 32 bit',
+        }
+
+        translated_sample_rates = {
+            SampleRates.SAMPLE_RATE_441KHZ: '44.1Khz',
+            SampleRates.SAMPLE_RATE_48KHZ: '48Khz',
+            SampleRates.SAMPLE_RATE_95KHZ: '96Khz',
+        }
+
+        self.project_sample_rate.set_model(Gtk.StringList.new(list(translated_sample_rates.values())))
+        self.project_bit_depth.set_model(Gtk.StringList.new(list(translated_bit_depths.values())))
+
     def on_project_create(self, button):
         # check values returned from dialog form
-        self.emit("create", self.project_name.get_text(),self.project_author.get_text(), self.project_path.get_text())
+        self.emit("create", self.project_name.get_text(),
+            self.project_author.get_text(),
+            self.project_path.get_text(),
+            self.project_sample_rate.get_selected(),
+            self.project_bit_depth.get_selected(),
+            )
         self.destroy()
 
     def destroy(self):

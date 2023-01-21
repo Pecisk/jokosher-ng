@@ -16,7 +16,7 @@ from .projectutilities import ProjectUtilities
 from .settings import Settings
 from .transportmanager import TransportManager
 from .audiobackend import AudioBackend
-
+from .jokosherenums import BitDepthFormats
 class Project(GObject.GObject):
 
     """ The audio playback state enum values """
@@ -93,7 +93,7 @@ class Project(GObject.GObject):
         # CREATE GSTREAMER ELEMENTS AND SET PROPERTIES #
         self.mainpipeline = Gst.Pipeline.new("timeline")
         self.playbackbin = Gst.Bin.new("playbackbin")
-        self.adder = Gst.ElementFactory.make("adder", None)
+        self.adder = Gst.ElementFactory.make("audiomixer", None)
         self.postAdderConvert = Gst.ElementFactory.make("audioconvert", None)
         self.masterSink = self.MakeProjectSink()
 
@@ -159,8 +159,13 @@ class Project(GObject.GObject):
         self.PrepareClick()
 
     @classmethod
-    def create(cls, name, author, location):
+    def create(cls, name, author, location, sample_rate, bit_depth):
         instance = Project()
+        if sample_rate:
+            sample_rates = [44100, 48000, 96000]
+            instance.sample_rate = sample_rates[sample_rate]
+        if bit_depth:
+            instance.bit_depth = BitDepthFormats(bit_depth)
         instance.name = name
         instance.author = author
         projectdir = cls.init_file_location(location)
@@ -923,11 +928,11 @@ class Project(GObject.GObject):
                     struct.set_value("channels", channelsNeeded)
 
                 Globals.debug("recording with capsfilter:", caps.to_string())
-                capsfilter = Gst.element_factory_make("capsfilter")
+                capsfilter = Gst.ElementFactory.make("capsfilter")
                 capsfilter.set_property("caps", caps)
 
-                split = Gst.element_factory_make("deinterleave")
-                convert = Gst.element_factory_make("audioconvert")
+                split = Gst.ElementFactory.make("deinterleave")
+                convert = Gst.ElementFactory.make("audioconvert")
 
                 recordingbin.add(srcBin, split, convert, capsfilter)
 
@@ -1085,6 +1090,102 @@ class Project(GObject.GObject):
         self.deleteOnCloseAudioFiles = []
 
         self.mainpipeline.set_state(Gst.State.NULL)
+
+    def export(self, filename, encodeBin, samplerate=None, bitrate=None):
+        """
+        Export to location filename with format specified by format variable.
+
+        Parameters:
+            filename -- filename where the exported audio will be saved.
+            encodeBin -- the gst-launch syntax string of the encoder as used in Globals.EXPORT_FORMATS:
+                    for ogg: "vorbisenc ! oggmux"
+                    for mp3: "lame"
+                    for wav: "wavenc"
+            samplerate -- the sample rate to output (optional, uses project default if blank).
+            bitrate -- the target bit rate to encode at (optional, uses encoder default if blank).
+        """
+
+        if samplerate:
+            encodeBin = "audioresample ! audio/x-raw,F32LE,rate=%d ! audioconvert ! %s" % (samplerate, encodeBin)
+        if bitrate:
+            encodeBin %= {'bitrate' : bitrate}
+
+        #try to create encoder/muxer first, before modifying the main pipeline.
+        try:
+            self.encodebin = Gst.parse_bin_from_description(encodeBin, True)
+        except GObject.GError as e:
+            if e.code == Gst.ParseError.NO_SUCH_ELEMENT:
+                error_no = ProjectManager.ProjectExportException.MISSING_ELEMENT
+            else:
+                error_no = ProjectManager.ProjectExportException.INVALID_ENCODE_BIN
+            raise ProjectManager.ProjectExportException(error_no, e.message)
+
+        #stop playback because some elements will be removed from the pipeline
+        self.stop()
+
+        #remove and unlink the alsasink
+        self.playbackbin.remove(self.masterSink)
+        self.playbackbin.remove(self.levelElement)
+
+        self.postAdderConvert.unlink(self.levelElement)
+        self.levelElement.unlink(self.masterSink)
+
+        #create filesink
+        self.outfile = Gst.ElementFactory.make("filesink", "export_file")
+        self.outfile.set_property("location", filename)
+        self.playbackbin.add(self.outfile)
+
+        self.playbackbin.add(self.encodebin)
+        self.postAdderConvert.link(self.encodebin)
+        self.encodebin.link(self.outfile)
+
+        #disconnect the bus message handler so the levels don't change
+        self.bus.disconnect(self.Mhandler)
+        self.bus.disconnect(self.EOShandler)
+        self.EOShandler = self.bus.connect("message::eos", self.terminate_export)
+
+        self.exportPending = True
+        self.exportFilename = filename
+        #start the pipeline!
+        self.Play(newAudioState=self.AUDIO_EXPORTING)
+        self.emit("audio-state::export-start")
+
+    def terminate_export(self, bus=None, message=None):
+        """
+        GStreamer End Of Stream handler. It is connected to eos on
+        mainpipeline while export is taking place.
+
+        Parameters:
+            bus -- reserved for GStreamer callbacks, don't use it explicitly.
+            message -- reserved for GStreamer callbacks, don't use it explicitly.
+        """
+
+        if not self.GetIsExporting():
+            return
+
+        #stop playback because some elements will be removed from the pipeline
+        self.Stop()
+
+        self.bus.disconnect(self.EOShandler)
+        self.Mhandler = self.bus.connect("message::element", self.__PipelineBusLevelCb)
+        self.EOShandler = self.bus.connect("message::eos", self.Stop)
+
+        #remove the filesink and encoder
+        self.playbackbin.remove(self.outfile)
+        self.playbackbin.remove(self.encodebin)
+        self.postAdderConvert.unlink(self.encodebin)
+
+        #dispose of the elements
+        self.outfile.set_state(Gst.State.NULL)
+        self.encodebin.set_state(Gst.State.NULL)
+        del self.outfile, self.encodebin
+
+        #re-add all the alsa playback elements
+        self.playbackbin.add(self.masterSink, self.levelElement)
+        self.postAdderConvert.link(self.levelElement)
+        self.levelElement.link(self.masterSink)
+
+        self.emit("audio-state::export-stop")
 
 class CreateProjectError(Exception):
     """

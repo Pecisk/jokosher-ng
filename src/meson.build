@@ -39,6 +39,7 @@ jokosher_sources = [
   'eventlaneviewer.py',
   'eventviewer.py',
   'event.py',
+  'exportdialog.py',
   'project.py',
   'utils.py',
   'globals.py',
@@ -57,6 +58,7 @@ jokosher_sources = [
   'audiobackend.py',
   'jokosherapplication.py',
   'jokosherpreferences.py',
+  'jokosherenums.py',
   'jokosher.css',
 ]
 

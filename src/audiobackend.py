@@ -183,7 +183,7 @@ class AudioBackend:
         except StopIteration:
             Globals.debug("Cannot list capture devices: no source device in the bin", src_desc)
 
-        fakesink = Gst.element_factory_make("fakesink")
+        fakesink = Gst.ElementFactory.make("fakesink")
         pipeline = Gst.Pipeline()
         pipeline.add(bin)
         pipeline.add(fakesink)

@@ -1,4 +1,5 @@
 from gi.repository import Gtk
+from .instrument import Instrument
 
 class InstrumentInfoBox(Gtk.Box):
     def __init__(self, instrument):
@@ -27,7 +28,10 @@ class InstrumentInfoBox(Gtk.Box):
         self.instrument_name.set_margin_end(5)
         self.instrument_name.set_margin_top(5)
         self.instrument_name.set_margin_bottom(5)
-        self.instrument_icon_and_name.append(Gtk.Button.new_from_icon_name("media-record"))
+        #self.instrument_icon_and_name.append(Gtk.Button.new_from_icon_name("media-record"))
+        self.instrument_icon = Gtk.Image.new_from_pixbuf(self.instrument.getCachedInstrumentPixbuf(self.instrument.instrType));
+        self.instrument_icon_and_name.append(self.instrument_icon)
+        self.instrument_icon.set_size_request(35, -1)
         self.instrument_icon_and_name.append(self.instrument_name)
         self.append(self.instrument_icon_and_name)
 

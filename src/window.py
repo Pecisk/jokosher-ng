@@ -25,6 +25,7 @@ from .project import Project
 from .addinstrumentdialog import AddInstrumentDialog
 from .scale import Scale
 from .projectdialog import ProjectDialog
+from .exportdialog import ExportDialog
 
 @Gtk.Template(resource_path='/org/gnome/Jokosher/window.ui')
 class JokosherWindow(Adw.ApplicationWindow):
@@ -78,6 +79,10 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.app.connect("project::open", self.on_project_open)
         self.app.connect("project::close", self.on_project_close)
         self.app.connect("project::dialog", self.on_project_dialog)
+        self.app.connect("project::export", self.on_project_export)
+
+        # FIXME set default size from saved settings
+        self.set_default_size(800, 600)
 
     def on_key_press(self, controller, keyval, keycode, state):
         key = Gdk.keyval_name(keyval)
@@ -135,6 +140,8 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.mixer_button.set_sensitive(True);
         self.scale_show_button.set_sensitive(True);
         self.project = Project.get_current_project()
+
+        # add top box which we will use for zoom, bpm and other meter settings
         self.top_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.general_box.append(self.top_box)
         self.top_box.props.hexpand = True
@@ -142,9 +149,38 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.top_box.append(self.scale)
         self.scale.props.halign = Gtk.Align.CENTER
         self.top_box.hide()
+
+        # add export pane which will serve as place for export dialog till we find more elegant solution
+        self.export_pane = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.general_box.append(self.export_pane)
+        self.export_pane.props.hexpand = True
+
+        # add export pane hide button
+        self.hide_button = Gtk.Button.new()
+        self.hide_button.set_icon_name("go-up-symbolic")
+        self.export_pane.append(self.hide_button)
+        self.hide_button.props.hexpand = False
+        self.hide_button.props.vexpand = False
+        self.hide_button.props.halign = Gtk.Align.END
+        self.hide_button.set_margin_top(10)
+        self.hide_button.set_margin_start(10)
+        self.hide_button.set_margin_end(10)
+        self.hide_button.set_margin_bottom(10)
+        self.hide_button.connect("clicked", self.on_export_pane_hide_button_clicked)
+
+        self.export_dialog = ExportDialog()
+        self.export_pane.append(self.export_dialog)
+        self.export_dialog.props.hexpand = True
+        self.export_pane.hide()
+
         self.workspace = Workspace()
         self.general_box.append(self.workspace)
 
+    def on_export_pane_hide_button_clicked(self, button):
+        self.export_pane.hide()
+
+    def on_project_export(self, application):
+        self.export_pane.show()
 
     def on_project_close(self, application):
         # cleanup crew

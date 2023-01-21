@@ -33,6 +33,7 @@ class JokosherApplication(Adw.Application):
         self.create_action('save-project', self.on_project_save_action)
         self.create_action('open-project', self.on_project_open_action)
         self.create_action('close-project', self.on_project_close_action)
+        self.create_action('export-audio', self.on_export_audio_action)
 
         self.connect("shutdown", self.on_shutdown)
         # TODO initialise settings
@@ -120,12 +121,12 @@ class JokosherApplication(Adw.Application):
         #self.project = Project.create(name='Untitled1', author='Pēteris Krišjānis', location='file:///home/peteriskrisjanis')
         #self.props.active_window.on_open_project()
 
-    def on_project_create(self, dialog, name, author, location):
+    def on_project_create(self, dialog, name, author, location, sample_rate=None, bit_depth=None):
         # this is callback from ProjectDialog
         # double check if project is really closed, should be at this point
         if self.project:
             self.close_project()
-        self.project = Project.create(name=name, author=author, location=location)
+        self.project = Project.create(name=name, author=author, location=location, sample_rate=sample_rate, bit_depth=bit_depth)
         # let everyone know we open new project
         self.emit("project::open")
         #self.props.active_window.on_open_project()
@@ -475,6 +476,9 @@ class JokosherApplication(Adw.Application):
         self.project.close_project()
         self.project = None
         return 0
+
+    def on_export_audio_action(self, widget, _):
+        self.emit("project::export")
 
     @staticmethod
     def get_application():

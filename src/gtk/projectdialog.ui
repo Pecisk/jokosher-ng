@@ -28,23 +28,45 @@
                   </object>
                 </child>
                 <child>
-                  <object class="GtkEntry" id="project_name">
-                    <property name="placeholder-text">Project name</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="project_author">
-                    <property name="placeholder-text">Project author</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkEntry" id="project_path">
-                    <property name="placeholder-text">/home/peteriskrisjanis</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="GtkButton" id="project_create_button">
-                    <property name="label">Create</property>
+                  <object class="AdwClamp">
+                    <property name="orientation">horizontal</property>
+                    <property name="maximum-size">500</property>
+                    <child>
+                      <object class="GtkListBox">
+                        <child>
+                          <object class="AdwEntryRow" id="project_name">
+                            <property name="title">Project name</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwEntryRow" id="project_author">
+                            <property name="title">Project author</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwEntryRow" id="project_path">
+                            <property name="title">Project folder path</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwComboRow" id="project_sample_rate">
+                            <property name="title">Audio sample rate</property>
+                            <property name="subtitle">Number of samples taken per second to store audio digitally</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="AdwComboRow" id="project_bit_depth">
+                            <property name="title">Audio bit depth</property>
+                            <property name="subtitle">Number of bits taken to store each sample</property>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="project_create_button">
+                            <property name="label">Create</property>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
                   </object>
                 </child>
               </object>
