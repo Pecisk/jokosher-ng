@@ -142,12 +142,23 @@ class JokosherWindow(Adw.ApplicationWindow):
         self.project = Project.get_current_project()
 
         # add top box which we will use for zoom, bpm and other meter settings
-        self.top_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.top_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
         self.general_box.append(self.top_box)
         self.top_box.props.hexpand = True
+        self.bpm_label = Gtk.Label.new("BPM")
+        self.top_box.append(self.bpm_label)
+        self.bpm_display = Gtk.SpinButton.new(Gtk.Adjustment.new(60.0, 0.0, 250.0, 1.0, 5.0, 0.0), 1.0, 0)
+        self.top_box.append(self.bpm_display)
+        self.bpm_display.set_value(self.project.bpm)
+        self.bpm_display.set_margin_top(5)
+        self.bpm_display.set_margin_start(5)
+        self.bpm_display.set_margin_bottom(5)
+        self.signature = Gtk.Label.new(str(self.project.meter_nom) + "/" + str(self.project.meter_denom))
+        self.top_box.append(self.signature)
         self.scale = Scale()
         self.top_box.append(self.scale)
         self.scale.props.halign = Gtk.Align.CENTER
+        self.scale.props.hexpand = True
         self.top_box.hide()
 
         # add export pane which will serve as place for export dialog till we find more elegant solution

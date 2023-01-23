@@ -11,6 +11,7 @@
 #-------------------------------------------------------------------------------
 
 from gi.repository import GObject, Gst
+import math
 
 #=========================================================================
 
@@ -275,6 +276,7 @@ class TransportManager(GObject.GObject):
         Returns:
             tuple of the current position as (bar, beats, ticks).
         """
+        # FIXME review and confirm is math correct
         mins = self.position / 60.
         if self.project.meter_denom == 8 and (self.project.meter_nom % 3) == 0 and self.project.meter_nom != 3:
             # Compound time
@@ -284,9 +286,10 @@ class TransportManager(GObject.GObject):
             # Simple meter
             beats_per_bar = self.project.meter_nom
             beats = int(mins * self.project.bpm)
-        ticks = ((mins - (beats / float(self.project.bpm))) * self.project.bpm) * self.TICKS_PER_BEAT
+        ticks = math.floor(((mins - (beats / float(self.project.bpm))) * self.project.bpm) * self.TICKS_PER_BEAT)
         bars = int(beats / beats_per_bar)
         beats -= bars * beats_per_bar
+        #print(ticks)
         return (bars+1, beats+1, ticks)
 
     #_____________________________________________________________________

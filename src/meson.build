@@ -34,6 +34,7 @@ jokosher_sources = [
   'recordingview.py',
   'timelinebar.py',
   'timeline.py',
+  'timelineclock.py',
   'instrument.py',
   'instrumentviewer.py',
   'eventlaneviewer.py',

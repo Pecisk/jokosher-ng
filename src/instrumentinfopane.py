@@ -2,6 +2,7 @@ from gi.repository import Gtk
 from .instrumentinfobox import InstrumentInfoBox
 from .project import Project
 from .settings import Settings
+from .timelineclock import TimeLineClock
 
 class InstrumentInfoPane(Gtk.Box):
     def __init__(self):
@@ -20,9 +21,9 @@ class InstrumentInfoPane(Gtk.Box):
         self.project.connect("instrument::removed", self.on_instrument_removed)
 
         # FIXME do proper start offset from TimeLineBar
-        self.header = Gtk.Box()
-        self.append(self.header)
-        self.header.set_size_request(-1, Settings.TIMELINE_HEIGHT)
+        self.timeline_clock = TimeLineClock()
+        self.append(self.timeline_clock)
+        self.timeline_clock.set_size_request(-1, Settings.TIMELINE_HEIGHT)
 
         # set scrollable part of instrument info pane
         self.instrument_info_pane_scrollable_window = Gtk.ScrolledWindow()

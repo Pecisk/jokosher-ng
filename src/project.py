@@ -1187,6 +1187,17 @@ class Project(GObject.GObject):
 
         self.emit("audio-state::export-stop")
 
+    def SetTransportMode(self, val):
+        """
+        Sets the Mode in the Transportmanager. Used to enable Undo/Redo.
+
+        Parameters:
+            val -- the mode to display the timeline bar:
+                    TransportManager.MODE_HOURS_MINS_SECS
+                    TransportManager.MODE_BARS_BEATS
+        """
+        self.transport.SetMode(val)
+
 class CreateProjectError(Exception):
     """
     This class will get created when creating a Project fails.

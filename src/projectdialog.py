@@ -7,7 +7,7 @@ class ProjectDialog(Gtk.Box):
     __gtype_name__ = "ProjectDialog"
 
     __gsignals__ = {
-        "create"     : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT) ),
+      "create" : ( GObject.SIGNAL_RUN_LAST, GObject.TYPE_NONE, (GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_STRING, GObject.TYPE_INT, GObject.TYPE_INT) ),
     }
 
     project_name = Gtk.Template.Child()

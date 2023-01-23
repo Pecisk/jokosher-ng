@@ -42,10 +42,8 @@ class TimeLine(Gtk.DrawingArea):
         self.project = Project.get_current_project()
 
         # Listen for changes in the project and the TransportManager
-        # self.project.transport.connect("transport-mode", self.OnTransportMode)
-        # self.project.transport.connect("position", self.OnTransportPosition)
-        print("PROJECT PROJECT IS ******************")
-        print(self.project)
+        self.project.transport.connect("transport-mode", self.OnTransportMode)
+        self.project.transport.connect("position", self.OnTransportPosition)
         self.project.connect("bpm", self.on_project_timeline_change)
         self.project.connect("time-signature", self.on_project_timeline_change)
         self.project.connect("view-start", self.on_project_timeline_change)
@@ -356,9 +354,10 @@ class TimeLine(Gtk.DrawingArea):
                     means that the position changed because the user hit stop.
         """
 
+        # FIXME optimisation although in new version it will be always shown
         #if the timeline is not currently on screen then quit
-        if self.get_window() is None:
-            return
+        #if self.get_window() is None:
+        #    return
 
         width_in_secs = self.get_allocated_width() / self.project.view_scale
         # The left and right sides of the viewable area
@@ -383,8 +382,9 @@ class TimeLine(Gtk.DrawingArea):
         prev_pos = self.project.transport.GetPreviousPixelPosition()
         new_pos = self.project.transport.GetPixelPosition()
 
-        self.queue_draw_area(prev_pos - 1, 0, 3, self.get_allocation().height)
-        self.queue_draw_area(new_pos - 1, 0, 3, self.get_allocation().height)
+        #self.queue_draw_area(prev_pos - 1, 0, 3, self.get_allocation().height)
+        #self.queue_draw_area(new_pos - 1, 0, 3, self.get_allocation().height)
+        self.queue_draw()
 
     #_____________________________________________________________________
 
