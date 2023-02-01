@@ -276,7 +276,7 @@ class TransportManager(GObject.GObject):
         Returns:
             tuple of the current position as (bar, beats, ticks).
         """
-        # FIXME review and confirm is math correct
+        # FIXME review and confirm is math          correct
         mins = self.position / 60.
         if self.project.meter_denom == 8 and (self.project.meter_nom % 3) == 0 and self.project.meter_nom != 3:
             # Compound time

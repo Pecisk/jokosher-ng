@@ -9,60 +9,88 @@
     <property name="hexpand">True</property>
     <property name="halign">fill</property>
     <child>
-      <object class="GtkScrolledWindow">
-        <property name="vexpand">True</property>
-        <property name="valign">fill</property>
-        <property name="hexpand">True</property>
-        <property name="halign">fill</property>
+      <object class="GtkStack" id="project_dialog_stack">
+      <property name="transition-type">crossfade</property>
         <child>
-          <object class="GtkBox" id="scrolled_part">
-            <property name="orientation">vertical</property>
-            <child>
-              <object class="GtkBox" id="main_part">
-                <property name="orientation">vertical</property>
+          <object class="GtkStackPage">
+            <property name="name">create_project_page</property>
+            <property name="title">Create Project</property>
+            <property name="child">
+              <object class="GtkScrolledWindow">
+                <property name="vexpand">True</property>
+                <property name="valign">fill</property>
+                <property name="hexpand">True</property>
+                <property name="halign">fill</property>
                 <child>
-                  <object class="GtkLabel">
-                    <property name="label">Create project</property>
-                    <property name="margin_top">50</property>
-                    <property name="margin_bottom">50</property>
-                  </object>
-                </child>
-                <child>
-                  <object class="AdwClamp">
-                    <property name="orientation">horizontal</property>
-                    <property name="maximum-size">500</property>
+                  <object class="GtkBox" id="scrolled_part">
+                    <property name="orientation">vertical</property>
                     <child>
-                      <object class="GtkListBox">
+                      <object class="GtkBox" id="main_part">
+                        <property name="orientation">vertical</property>
                         <child>
-                          <object class="AdwEntryRow" id="project_name">
-                            <property name="title">Project name</property>
+                          <object class="GtkButton" id="back_button">
+                            <property name="halign">start</property>
+                            <property name="icon-name">go-previous-symbolic</property>
+                            <property name="margin_top">10</property>
+                            <property name="margin_start">10</property>"
                           </object>
                         </child>
                         <child>
-                          <object class="AdwEntryRow" id="project_author">
-                            <property name="title">Project author</property>
+                          <object class="GtkLabel">
+                            <property name="label">Create project</property>
+                            <property name="margin_top">40</property>
+                            <property name="margin_bottom">40</property>
+                            <style>
+                              <class name="title-1" />
+                            </style>
                           </object>
                         </child>
                         <child>
-                          <object class="AdwEntryRow" id="project_path">
-                            <property name="title">Project folder path</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="AdwComboRow" id="project_sample_rate">
-                            <property name="title">Audio sample rate</property>
-                            <property name="subtitle">Number of samples taken per second to store audio digitally</property>
-                          </object>
-                        </child>
-                        <child>
-                          <object class="AdwComboRow" id="project_bit_depth">
-                            <property name="title">Audio bit depth</property>
-                            <property name="subtitle">Number of bits taken to store each sample</property>
+                          <object class="AdwClamp">
+                            <property name="orientation">horizontal</property>
+                            <property name="maximum-size">500</property>
+                            <child>
+                              <object class="GtkListBox">
+                                <style>
+                                  <class name="boxed-list" />
+                                </style>
+                                <child>
+                                  <object class="AdwEntryRow" id="project_name">
+                                    <property name="title">Project name</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwEntryRow" id="project_author">
+                                    <property name="title">Project author</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwEntryRow" id="project_path">
+                                    <property name="title">Project folder path</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwComboRow" id="project_sample_rate">
+                                    <property name="title">Audio sample rate</property>
+                                    <property name="subtitle">Number of samples taken per second to store audio digitally</property>
+                                  </object>
+                                </child>
+                                <child>
+                                  <object class="AdwComboRow" id="project_bit_depth">
+                                    <property name="title">Audio bit depth</property>
+                                    <property name="subtitle">Number of bits taken to store each sample</property>
+                                  </object>
+                                </child>
+                              </object>
+                            </child>
                           </object>
                         </child>
                         <child>
                           <object class="GtkButton" id="project_create_button">
-                            <property name="label">Create</property>
+                              <property name="margin_top">20</property>
+                              <property name="hexpand">false</property>
+                              <property name="halign">center</property>
+                              <property name="label">Create Project</property>
                           </object>
                         </child>
                       </object>
@@ -70,9 +98,106 @@
                   </object>
                 </child>
               </object>
-            </child>
+            </property>
           </object>
         </child>
+
+        <child>
+          <object class="GtkStackPage">
+            <property name="name">open_projects_page</property>
+            <property name="title">Open Project</property>
+            <property name="child">
+              <object class="GtkScrolledWindow">
+                <property name="vexpand">True</property>
+                <property name="valign">fill</property>
+                <property name="hexpand">True</property>
+                <property name="halign">fill</property>
+                <child>
+                  <object class="GtkBox" id="open_project_main_box">
+                    <property name="vexpand">True</property>
+                    <property name="valign">fill</property>
+                    <property name="hexpand">True</property>
+                    <property name="halign">fill</property>
+                    <property name="orientation">vertical</property>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="margin_top">40</property>
+                        <property name="margin_bottom">40</property>
+                        <property name="valign">center</property>
+                        <style>
+                          <class name="title-1" />
+                        </style>
+                        <property name="label">Open previous project</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSearchEntry" id="projects_search_entry">
+                        <property name="halign">center</property>
+                        <property name="placeholder-text">Search all projects...</property>
+                        <property name="width-chars">45</property>
+                        <property name="margin_bottom">20</property>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="AdwClamp">
+                        <property name="orientation">vertical</property>
+                        <property name="maximum-size">500</property>
+                        <property name="halign">center</property>
+                        <property name="vexpand">false</property>
+                        <child>
+                          <object class="GtkListBox" id="recent_projects_box">
+                            <property name="vexpand">false</property>
+                            <style>
+                              <class name="boxed-list" />
+                              <class name="recent-projects-box" />"
+                            </style>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkBox">
+                        <property name="orientation">horizontal</property>
+                        <property name="halign">center</property>
+                        <property name="margin-top">20</property>
+                        <child>
+                          <object class="GtkButton" id="create_project_page_button">
+                            <property name="margin_bottom">30</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Create New Project...</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                        <child>
+                          <object class="GtkButton" id="open_project_button">
+                            <property name="margin_bottom">30</property>
+                            <child>
+                              <object class="GtkLabel">
+                                <property name="label">Open</property>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                  </object>
+                </child>
+              </object>
+            </property>
+          </object>
+        </child>
+
+        <child>
+          <object class="GtkStackPage">
+            <property name="child">
+              <object class="GtkBox" id="another_page">
+              </object>
+            </property>
+          </object>
+        </child>
+
       </object>
     </child>
   </template>

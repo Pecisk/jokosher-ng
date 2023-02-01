@@ -71,3 +71,9 @@ jokosher_subsources = [
   'platform_utils/unix.py',
 ]
 install_data(jokosher_subsources, install_dir: join_paths(moduledir, 'platform_utils'))
+
+jokosher_widgets = [
+  'widgets/__init__.py',
+  'widgets/projectentry.py',
+]
+install_data(jokosher_widgets, install_dir: join_paths(moduledir, 'widgets'))

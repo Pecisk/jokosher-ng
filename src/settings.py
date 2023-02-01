@@ -508,6 +508,16 @@ class Settings:
     def get_bit_depth(self):
         return self.gsettings.get_string('bit-depth')
 
+    def get_recent_projects(self):
+        return self.gsettings.get_strv('recent-projects')
+
+    def add_recent_project(self, project):
+        recent_projects = self.gsettings.get_strv('recent-projects')
+        recent_projects.append(project.projectfile)
+        # make sure we don't repeat entries'
+        recent_projects = list(set(recent_projects))
+        self.gsettings.set_strv('recent-projects', recent_projects)
+
     def get_recording_audio_encoding(self):
         return self.recording["fileformat"]
 

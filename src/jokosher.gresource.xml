@@ -5,5 +5,6 @@
     <file preprocess="xml-stripblanks">gtk/help-overlay.ui</file>
     <file preprocess="xml-stripblanks">gtk/addinstrumentdialog.ui</file>
     <file preprocess="xml-stripblanks">gtk/projectdialog.ui</file>
+    <file preprocess="xml-stripblanks">gtk/projectentry.ui</file>
   </gresource>
 </gresources>

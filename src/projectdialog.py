@@ -1,5 +1,33 @@
+""" Widget for project dialog which is shown when application is launched
+
+This program is free software: you can redistribute it and/or modify it under
+the terms of the GNU General Public License as published by the Free Software
+Foundation, either version 3 of the License, or (at your option) any later
+version.
+This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.
+You should have received a copy of the GNU General Public License along with
+this program. If not, see <http://www.gnu.org/licenses/>.
+"""
+
+__author__ = "Pēteris Krišjānis"
+__authors__ = ["Pēteris Krišjānis"]
+__contact__ = "pecisk@gmail.com"
+__copyright__ = "Copyright 2022"
+__credits__ = ["Pēteris Krišjānis"]
+__date__ = "2023/01/01"
+__deprecated__ = False
+__email__ =  "pecisk@gmail.com"
+__license__ = "GPLv3"
+__maintainer__ = "Pēteris Krišjānis"
+__status__ = "Production"
+__version__ = "1.0a1"
+
+
 from gi.repository import Gtk, Adw, GObject, Gio
 from .jokosherenums import BitDepthFormats, SampleRates
+from .widgets.projectentry import ProjectEntry
 
 @Gtk.Template(resource_path='/org/gnome/Jokosher/gtk/projectdialog.ui')
 class ProjectDialog(Gtk.Box):
@@ -16,6 +44,10 @@ class ProjectDialog(Gtk.Box):
     project_create_button = Gtk.Template.Child()
     project_sample_rate = Gtk.Template.Child()
     project_bit_depth = Gtk.Template.Child()
+    project_dialog_stack = Gtk.Template.Child()
+    recent_projects_box = Gtk.Template.Child()
+    create_project_page_button = Gtk.Template.Child()
+    back_button = Gtk.Template.Child()
 
     def __init__(self):
         Gtk.Box.__init__(self)
@@ -92,6 +124,36 @@ class ProjectDialog(Gtk.Box):
 
         self.project_sample_rate.set_model(Gtk.StringList.new(list(translated_sample_rates.values())))
         self.project_bit_depth.set_model(Gtk.StringList.new(list(translated_bit_depths.values())))
+        self.project_dialog_stack.set_visible_child_name("open_projects_page")
+
+        self.create_project_page_button.connect("clicked", self.on_create_project_page_switch)
+        self.back_button.connect("clicked", self.on_back_button_clicked)
+
+        self.recent_projects = self.application.settings.get_recent_projects()
+        for recent_project_entry in self.recent_projects:
+            recent_project_entry_box = ProjectEntry(recent_project_entry)
+
+            # recent_project_entry_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
+            # recent_project_entry_text = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+            # recent_project_entry_text.append(Gtk.Label.new("Project name"))
+            # recent_project_entry_text.append(Gtk.Label.new("projectpath"))
+            # recent_project_entry_box.append(recent_project_entry_text)
+            # recent_project_entry_text.props.halign = Gtk.Align.START
+            self.recent_projects_box.prepend(recent_project_entry_box)
+
+            mouse_controller = Gtk.GestureClick.new()
+            recent_project_entry_box.add_controller(mouse_controller)
+
+            # we listen to all buttons
+            mouse_controller.set_button(0)
+            #mouse_controller.connect("released", self.on_mouse_up)
+            mouse_controller.connect("pressed", self.on_mouse_down)
+
+    def on_back_button_clicked(self, button):
+        self.project_dialog_stack.set_visible_child_name("open_projects_page")
+
+    def on_create_project_page_switch(self, button):
+        self.project_dialog_stack.set_visible_child_name("create_project_page")
 
     def on_project_create(self, button):
         # check values returned from dialog form
@@ -105,4 +167,12 @@ class ProjectDialog(Gtk.Box):
 
     def destroy(self):
         self.unparent()
-        self.run_dispose()        
+        self.run_dispose()
+
+    def on_mouse_down(self, controller, press_count, press_x, press_y):
+        widget = controller.get_widget()
+        print(widget.project_file_path)
+        self.application.open_project(widget.project_file_path)
+        # claim sequence
+        controller.set_state(Gtk.EventSequenceState.CLAIMED)
+        return True

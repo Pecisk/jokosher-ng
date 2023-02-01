@@ -474,6 +474,10 @@ class JokosherApplication(Adw.Application):
 
         self.emit("project::close")
         self.project.close_project()
+
+        # write down in recent projects
+        self.settings.add_recent_project(self.project)
+
         self.project = None
         return 0
 

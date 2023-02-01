@@ -21,5 +21,10 @@
 	    <summary>Default bit depth</summary>
 	    <description>Default bit depth for recording audio.</description>
 	  </key>
+	  <key type="as" name="recent-projects">
+	    <default>[]</default>
+	    <summary>List of recent projects</summary>
+	    <description>List of recently opened projects in Jokosher</description>
+	  </key>
 	</schema>
 </schemalist>
